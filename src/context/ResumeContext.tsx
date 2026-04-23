@@ -100,6 +100,7 @@ const initialData: ResumeData = {
     fontFamily: 'Roboto',
     template: 'modern',
     photoShape: 'circle',
+    photoPosition: 'right',
     sectionTitles: {
       summary: 'Profile',
       experience: 'Experience',

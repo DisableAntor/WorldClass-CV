@@ -105,7 +105,7 @@ export function BuilderLayout() {
                    >
                      <div>
                        <span className="block font-semibold text-slate-800 capitalize mb-1">{data.settings.template}</span>
-                       <span className="block text-xs text-slate-500">Click to browse 20+ templates</span>
+                       <span className="block text-xs text-slate-500">Click to browse 30+ templates</span>
                      </div>
                      <LayoutGrid className="text-slate-400" />
                    </button>
@@ -134,6 +134,21 @@ export function BuilderLayout() {
                          className={`py-2 text-sm capitalize border rounded-lg text-center ${data.settings.photoShape === shape || (!data.settings.photoShape && shape === 'circle') ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-slate-300'}`}
                        >
                          {shape}
+                       </button>
+                     ))}
+                   </div>
+                </div>
+
+                <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Profile Photo Position</label>
+                   <div className="grid grid-cols-3 gap-2">
+                     {['left', 'center', 'right'].map(pos => (
+                       <button
+                         key={pos}
+                         onClick={() => updateSettings('photoPosition', pos)}
+                         className={`py-2 text-sm capitalize border rounded-lg text-center ${data.settings.photoPosition === pos || (!data.settings.photoPosition && pos === 'right') ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-slate-300'}`}
+                       >
+                         {pos}
                        </button>
                      ))}
                    </div>

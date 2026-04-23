@@ -104,6 +104,7 @@ export interface ResumeSettings {
   fontFamily: string;
   template: string;
   photoShape?: 'circle' | 'rounded' | 'square';
+  photoPosition?: 'left' | 'center' | 'right';
   sectionTitles: {
     summary: string;
     experience: string;
