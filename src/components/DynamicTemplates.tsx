@@ -336,7 +336,8 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
             {personalInfo.photoUrl && (
               <img 
                 src={personalInfo.photoUrl} 
-                className={`w-32 h-32 object-cover border-4 border-black/10 shrink-0 ${getShapeClass(settings.photoShape)}`} 
+                className={`w-32 h-32 border-4 border-black/10 shrink-0 ${getShapeClass(settings.photoShape)}`} 
+                style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }}
                 alt="Profile"
               />
             )}
@@ -372,8 +373,11 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
                 {personalInfo.photoUrl && (
                   <img 
                     src={personalInfo.photoUrl} 
-                    className={`w-36 h-36 object-cover border-4 border-black/10 shrink-0 shadow-lg ${getShapeClass(settings.photoShape)}`} 
-                    alt="Profile"
+                    className={`w-36 h-36 border-4 border-black/10 shrink-0 shadow-lg ${getShapeClass(settings.photoShape)}`} 
+            style={{ 
+              objectFit: 'cover', 
+              objectPosition: settings.photoObjectPosition || 'center' 
+            }}                    alt="Profile"
                   />
                 )}
                 <div className="w-full">

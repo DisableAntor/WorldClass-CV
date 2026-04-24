@@ -22,7 +22,6 @@ export function BuilderLayout() {
     {
       target: '.tour-form-pane',
       content: 'Here you can fill out all your personal information, experience, and education.',
-      disableBeacon: true,
     },
     {
       target: '.tour-settings-btn',
@@ -312,6 +311,21 @@ export function BuilderLayout() {
                    </div>
                 </div>
 
+                <div>
+                   <label className="block text-sm font-medium text-slate-700 mb-2">Photo Crop Alignment</label>
+                   <div className="grid grid-cols-3 gap-2">
+                     {['top', 'center', 'bottom'].map(pos => (
+                       <button
+                         key={pos}
+                         onClick={() => updateSettings('photoObjectPosition', pos)}
+                         className={`py-2 text-sm capitalize border rounded-lg text-center ${data.settings.photoObjectPosition === pos || (!data.settings.photoObjectPosition && pos === 'center') ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 hover:border-slate-300'}`}
+                       >
+                         {pos}
+                       </button>
+                     ))}
+                   </div>
+                </div>
+
                 <div className="border-t border-slate-200 pt-6">
                    <h3 className="text-base font-semibold text-slate-800 mb-4">Section Headings</h3>
                    <div className="space-y-3">
@@ -431,12 +445,6 @@ export function BuilderLayout() {
         continuous={true}
         showProgress={true}
         showSkipButton={true}
-        styles={{
-          options: {
-            primaryColor: '#2563eb',
-            zIndex: 10000,
-          }
-        }}
         callback={(data) => {
           if (data.status === 'finished' || data.status === 'skipped') {
             setRunTutorial(false);

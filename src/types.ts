@@ -105,6 +105,7 @@ export interface ResumeSettings {
   template: string;
   photoShape?: 'circle' | 'rounded' | 'square';
   photoPosition?: 'left' | 'center' | 'right';
+  photoObjectPosition?: 'top' | 'center' | 'bottom';
   sectionTitles: {
     summary: string;
     experience: string;

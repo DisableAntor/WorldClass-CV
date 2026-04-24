@@ -140,7 +140,8 @@ function ModernTemplate({ data }: { data: any }) {
             <img 
               src={personalInfo.photoUrl} 
               alt="Profile" 
-              className={`w-32 h-32 ${getShapeClass(settings.photoShape)} object-cover border-4 border-white/20 shadow-lg`}
+              className={`w-32 h-32 ${getShapeClass(settings.photoShape)} border-4 border-white/20 shadow-lg`}
+              style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }}
             />
           )}
           <div>
@@ -311,8 +312,8 @@ function ClassicTemplate({ data }: { data: any }) {
           <img 
             src={personalInfo.photoUrl} 
             alt="Profile" 
-            className={`w-24 h-24 ${getShapeClass(settings.photoShape)} object-cover border-2 shadow-sm mb-4`}
-            style={{ borderColor: settings.themeColor }}
+            className={`w-24 h-24 ${getShapeClass(settings.photoShape)} border-2 shadow-sm mb-4`}
+            style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center', borderColor: settings.themeColor }}
           />
         )}
         <h1 className="text-4xl font-bold uppercase tracking-widest mb-2" style={{ color: settings.themeColor }}>
@@ -433,7 +434,8 @@ function MinimalTemplate({ data }: { data: any }) {
           <img 
             src={personalInfo.photoUrl} 
             alt="Profile" 
-            className={`w-32 h-32 ${getShapeClass(settings.photoShape)} object-cover grayscale opacity-90 shrink-0`}
+            className={`w-32 h-32 ${getShapeClass(settings.photoShape)} opacity-90 shrink-0`}
+            style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }}
           />
         )}
         <div className="flex-1">
@@ -556,7 +558,8 @@ function ExecutiveTemplate({ data }: { data: any }) {
           <img 
             src={personalInfo.photoUrl} 
             alt="Profile" 
-            className={`w-32 h-32 ${getShapeClass(settings.photoShape)} object-cover shrink-0 border-2 border-slate-700`}
+            className={`w-32 h-32 ${getShapeClass(settings.photoShape)} shrink-0 border-2 border-slate-700`}
+            style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }}
           />
         )}
         <div className="flex-1">
@@ -695,7 +698,8 @@ function CreativeTemplate({ data }: { data: any }) {
             <img 
               src={personalInfo.photoUrl} 
               alt="Profile" 
-              className={`w-40 h-40 ${getShapeClass(settings.photoShape)} object-cover object-center shadow-xl border-4 border-white/20`}
+              className={`w-40 h-40 ${getShapeClass(settings.photoShape)} shadow-xl border-4 border-white/20`}
+              style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }}
             />
           )}
           <div className="flex-1">
@@ -828,7 +832,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
         </div>
         {personalInfo.photoUrl && (
           <div className="w-32 h-32 border border-slate-400 p-1 shrink-0 bg-slate-50">
-            <img src={personalInfo.photoUrl} alt="Passport Photo" className="w-full h-full object-cover grayscale" />
+            <img src={personalInfo.photoUrl} alt="Passport Photo" className="w-full h-full" style={{ objectFit: 'cover', objectPosition: settings.photoObjectPosition || 'center' }} />
           </div>
         )}
       </div>
