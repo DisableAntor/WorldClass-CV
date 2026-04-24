@@ -4,17 +4,12 @@ import { PreviewPane } from './PreviewPane';
 import { Download, LayoutTemplate, Settings, LayoutGrid, X, Image as ImageIcon, FileText, ChevronDown, Loader2, HelpCircle } from 'lucide-react';
 import { useResume } from '../context/ResumeContext';
 import { ALL_TEMPLATES } from './DynamicTemplates';
-import { jsPDF } from 'jspdf';
 import { Joyride, Step } from 'react-joyride';
-import { toPng } from 'html-to-image';
 
 export function BuilderLayout() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
-  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
-  const downloadMenuRef = useRef<HTMLDivElement>(null);
   const [runTutorial, setRunTutorial] = useState(false);
   const { updateSettings, data } = useResume();
 
@@ -36,87 +31,6 @@ export function BuilderLayout() {
       content: 'This is a live preview of your CV. It updates instantly as you make changes.',
     }
   ];
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
-        setShowDownloadMenu(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const downloadAsImage = async () => {
-    setIsDownloading(true);
-    setShowDownloadMenu(false);
-    try {
-      const element = document.querySelector('.cv-preview') as HTMLElement;
-      if (!element) throw new Error("Preview element not found");
-      
-      const dataUrl = await toPng(element, { 
-        pixelRatio: 2,
-        backgroundColor: '#ffffff',
-        style: { margin: '0', boxShadow: 'none' } 
-      });
-      const link = document.createElement('a');
-      link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (error) {
-      console.error('Failed to generate image:', error);
-      alert('Failed to generate image. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const downloadAsRenderedPDF = async () => {
-    setIsDownloading(true);
-    setShowDownloadMenu(false);
-    try {
-      const element = document.querySelector('.cv-preview') as HTMLElement;
-      if (!element) throw new Error("Preview element not found");
-      
-      const imgData = await toPng(element, { 
-        pixelRatio: 3,
-        backgroundColor: '#ffffff',
-        style: { margin: '0', boxShadow: 'none' } 
-      });
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      const domRect = element.getBoundingClientRect();
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (domRect.height * pdfWidth) / domRect.width;
-      
-      let heightLeft = pdfHeight;
-      let position = 0;
-      
-      // Add first page
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pdf.internal.pageSize.getHeight();
-      
-      // Add extra pages if content is taller than A4
-      while (heightLeft >= 0) {
-        position = heightLeft - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pdf.internal.pageSize.getHeight();
-      }
-      
-      pdf.save(`${data.personalInfo.firstName || 'Resume'}_CV.pdf`);
-    } catch (error) {
-      console.error('Failed to generate rendering PDF:', error);
-      alert('Failed to generate PDF. Please try again.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-100 font-sans">
@@ -160,53 +74,14 @@ export function BuilderLayout() {
             <span className="hidden sm:inline">Settings</span>
           </button>
           
-          <div className="relative" ref={downloadMenuRef}>
+          <div className="relative">
             <button 
-              onClick={() => setShowDownloadMenu(!showDownloadMenu)}
-              disabled={isDownloading}
-              className="tour-download-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+              onClick={() => window.print()}
+              className="tour-download-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
             >
-              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isDownloading ? 'Processing...' : 'Download'}</span>
-              <ChevronDown className="w-4 h-4 opacity-70" />
+              <Download className="w-4 h-4" />
+              <span className="hidden sm:inline">Save as PDF</span>
             </button>
-
-            {showDownloadMenu && (
-              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 overflow-hidden z-50">
-                <button
-                  onClick={() => { setShowDownloadMenu(false); window.print(); }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <FileText className="w-4 h-4 text-slate-500" />
-                  <div>
-                    <div className="font-medium text-slate-800">Print as PDF</div>
-                    <div className="text-xs text-slate-500">Highest quality, uses browser print</div>
-                  </div>
-                </button>
-                <div className="h-px bg-slate-100"></div>
-                <button
-                  onClick={downloadAsImage}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <ImageIcon className="w-4 h-4 text-slate-500" />
-                  <div>
-                    <div className="font-medium text-slate-800">Save as Image</div>
-                    <div className="text-xs text-slate-500">High-res PNG format</div>
-                  </div>
-                </button>
-                <div className="h-px bg-slate-100"></div>
-                <button
-                  onClick={downloadAsRenderedPDF}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-left hover:bg-slate-50 transition-colors"
-                >
-                  <Download className="w-4 h-4 text-slate-500" />
-                  <div>
-                    <div className="font-medium text-slate-800">Export as PDF File</div>
-                    <div className="text-xs text-slate-500">Perfect exact styling rendering</div>
-                  </div>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       </header>

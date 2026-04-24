@@ -177,6 +177,24 @@ function ModernTemplate({ data }: { data: any }) {
               <span className="break-all">{personalInfo.linkedin}</span>
             </div>
           )}
+          {personalInfo.github && (
+            <div className="flex items-center gap-3">
+              <Github className="w-4 h-4 shrink-0" />
+              <span className="break-all">{personalInfo.github}</span>
+            </div>
+          )}
+          {personalInfo.website && (
+            <div className="flex items-center gap-3">
+              <Globe className="w-4 h-4 shrink-0" />
+              <span className="break-all">{personalInfo.website}</span>
+            </div>
+          )}
+          {personalInfo.address && (
+            <div className="flex items-center gap-3">
+              <MapPin className="w-4 h-4 shrink-0" />
+              <span className="break-all">{personalInfo.address}</span>
+            </div>
+          )}
         </div>
 
         {skills.length > 0 && (
@@ -326,7 +344,9 @@ function ClassicTemplate({ data }: { data: any }) {
             personalInfo.email,
             personalInfo.phone,
             [personalInfo.city, personalInfo.country].filter(Boolean).join(', '),
+            personalInfo.address,
             personalInfo.linkedin,
+            personalInfo.github,
             personalInfo.website
           ].filter(Boolean).map((item, i, arr) => (
             <React.Fragment key={i}>
@@ -448,8 +468,13 @@ function MinimalTemplate({ data }: { data: any }) {
               {personalInfo.email && <span>{personalInfo.email}</span>}
               {personalInfo.phone && <span>{personalInfo.phone}</span>}
             </div>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap gap-4">
+              {(personalInfo.city || personalInfo.country) && <span>{[personalInfo.city, personalInfo.country].filter(Boolean).join(', ')}</span>}
+              {personalInfo.address && <span>{personalInfo.address}</span>}
+            </div>
+            <div className="flex flex-wrap gap-4">
               {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
+              {personalInfo.github && <span>{personalInfo.github}</span>}
               {personalInfo.website && <span>{personalInfo.website}</span>}
             </div>
           </div>
@@ -572,7 +597,10 @@ function ExecutiveTemplate({ data }: { data: any }) {
           {personalInfo.email && <span>{personalInfo.email}</span>}
           {personalInfo.phone && <span>{personalInfo.phone}</span>}
           {(personalInfo.city || personalInfo.country) && <span>{[personalInfo.city, personalInfo.country].filter(Boolean).join(', ')}</span>}
+          {personalInfo.address && <span>{personalInfo.address}</span>}
           {personalInfo.linkedin && <span>{personalInfo.linkedin}</span>}
+          {personalInfo.github && <span>{personalInfo.github}</span>}
+          {personalInfo.website && <span>{personalInfo.website}</span>}
         </div>
       </div>
 
@@ -715,7 +743,9 @@ function CreativeTemplate({ data }: { data: any }) {
         {personalInfo.email && <span className="flex items-center gap-2"><Mail className="w-4 h-4"/>{personalInfo.email}</span>}
         {personalInfo.phone && <span className="flex items-center gap-2"><Phone className="w-4 h-4"/>{personalInfo.phone}</span>}
         {(personalInfo.city || personalInfo.country) && <span className="flex items-center gap-2"><MapPin className="w-4 h-4"/>{[personalInfo.city, personalInfo.country].filter(Boolean).join(', ')}</span>}
+        {personalInfo.address && <span className="flex items-center gap-2"><MapPin className="w-4 h-4"/>{personalInfo.address}</span>}
         {personalInfo.website && <span className="flex items-center gap-2"><Globe className="w-4 h-4"/>{personalInfo.website}</span>}
+        {personalInfo.github && <span className="flex items-center gap-2"><Github className="w-4 h-4"/>{personalInfo.github}</span>}
         {personalInfo.linkedin && <span className="flex items-center gap-2"><Linkedin className="w-4 h-4"/>{personalInfo.linkedin}</span>}
       </div>
 
@@ -829,6 +859,9 @@ export function BdStandardTemplate({ data }: { data: any }) {
           {personalInfo.address && <p><strong>Address:</strong> {personalInfo.address}, {personalInfo.city}{personalInfo.country ? `, ${personalInfo.country}` : ''}</p>}
           {personalInfo.phone && <p><strong>Mobile:</strong> {personalInfo.phone}</p>}
           {personalInfo.email && <p><strong>Email:</strong> {personalInfo.email}</p>}
+          {personalInfo.linkedin && <p><strong>LinkedIn:</strong> {personalInfo.linkedin}</p>}
+          {personalInfo.github && <p><strong>GitHub:</strong> {personalInfo.github}</p>}
+          {personalInfo.website && <p><strong>Website:</strong> {personalInfo.website}</p>}
         </div>
         {personalInfo.photoUrl && (
           <div className="w-32 h-32 border border-slate-400 p-1 shrink-0 bg-slate-50">

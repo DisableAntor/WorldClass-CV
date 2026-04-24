@@ -1,5 +1,5 @@
 import React from 'react';
-import { Mail, Phone, MapPin, Linkedin, Globe } from 'lucide-react';
+import { Mail, Phone, MapPin, Linkedin, Globe, Github } from 'lucide-react';
 
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
@@ -109,7 +109,10 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
       {personalInfo.email && <div className="flex items-center gap-2"><Mail size={14}/><span>{personalInfo.email}</span></div>}
       {personalInfo.phone && <div className="flex items-center gap-2"><Phone size={14}/><span>{personalInfo.phone}</span></div>}
       {(personalInfo.city || personalInfo.country) && <div className="flex items-center gap-2"><MapPin size={14}/><span>{[personalInfo.city, personalInfo.country].filter(Boolean).join(', ')}</span></div>}
+      {personalInfo.address && <div className="flex items-center gap-2"><MapPin size={14}/><span>{personalInfo.address}</span></div>}
       {personalInfo.linkedin && <div className="flex items-center gap-2"><Linkedin size={14}/><span>{personalInfo.linkedin}</span></div>}
+      {personalInfo.github && <div className="flex items-center gap-2"><Github size={14}/><span>{personalInfo.github}</span></div>}
+      {personalInfo.website && <div className="flex items-center gap-2"><Globe size={14}/><span>{personalInfo.website}</span></div>}
     </div>
   );
 
