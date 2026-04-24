@@ -119,7 +119,26 @@ const initialData: ResumeData = {
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 
 export function ResumeProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ResumeData>(initialData);
+  const [data, setData] = useState<ResumeData>(() => {
+    if (typeof window !== 'undefined') {
+      const savedData = localStorage.getItem('worldClassCvData');
+      if (savedData) {
+        try {
+          return JSON.parse(savedData);
+        } catch (e) {
+          console.error("Failed to parse saved resume data", e);
+        }
+      }
+    }
+    return initialData;
+  });
+
+  // Save to localStorage whenever data changes
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('worldClassCvData', JSON.stringify(data));
+    }
+  }, [data]);
 
   const updatePersonalInfo = (field: string, value: string) => {
     setData(prev => ({
