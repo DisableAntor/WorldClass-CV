@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FormPane } from './FormPane';
 import { PreviewPane } from './PreviewPane';
-import { Download, LayoutTemplate, Settings, LayoutGrid, X, Image as ImageIcon, FileText, ChevronDown, Loader2 } from 'lucide-react';
+import { Download, LayoutTemplate, Settings, LayoutGrid, X, Image as ImageIcon, FileText, ChevronDown, Loader2, HelpCircle } from 'lucide-react';
 import { useResume } from '../context/ResumeContext';
 import { ALL_TEMPLATES } from './DynamicTemplates';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
+import { Joyride, Step } from 'react-joyride';
 
 export function BuilderLayout() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -14,7 +15,28 @@ export function BuilderLayout() {
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
+  const [runTutorial, setRunTutorial] = useState(false);
   const { updateSettings, data } = useResume();
+
+  const tutorialSteps: Step[] = [
+    {
+      target: '.tour-form-pane',
+      content: 'Here you can fill out all your personal information, experience, and education.',
+      disableBeacon: true,
+    },
+    {
+      target: '.tour-settings-btn',
+      content: 'Click here to customize the colors, typography, layout, and choose from over 30 templates!',
+    },
+    {
+      target: '.tour-download-btn',
+      content: 'When you are done, export your amazing new CV to PNG or PDF, or just print it directly.',
+    },
+    {
+      target: '.tour-preview-pane',
+      content: 'This is a live preview of your CV. It updates instantly as you make changes.',
+    }
+  ];
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -26,13 +48,47 @@ export function BuilderLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const generateCanvas = async (scale: number = 2) => {
+    const originalElement = document.querySelector('.cv-preview') as HTMLElement;
+    if (!originalElement) throw new Error("Preview element not found");
+
+    // Create a wrapper to hold the clone off-screen
+    const wrapper = document.createElement('div');
+    wrapper.style.position = 'absolute';
+    wrapper.style.top = '-9999px';
+    wrapper.style.left = '-9999px';
+    wrapper.style.width = '21cm'; // Hardcode A4 width
+    // Don't set height so it can grow
+    
+    // Clone the element deeply
+    const clone = originalElement.cloneNode(true) as HTMLElement;
+    
+    // Copy the exact inline styles, especially width and font-family
+    clone.style.cssText = originalElement.style.cssText;
+    clone.style.margin = '0';
+    clone.style.boxShadow = 'none';
+    
+    wrapper.appendChild(clone);
+    document.body.appendChild(wrapper);
+
+    try {
+      const canvas = await html2canvas(clone, { 
+        scale, 
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      return canvas;
+    } finally {
+      document.body.removeChild(wrapper);
+    }
+  };
+
   const downloadAsImage = async () => {
     setIsDownloading(true);
     setShowDownloadMenu(false);
     try {
-      const element = document.querySelector('.cv-preview') as HTMLElement;
-      if (!element) return;
-      const canvas = await html2canvas(element, { scale: 2, useCORS: true });
+      const canvas = await generateCanvas(2);
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
@@ -50,10 +106,7 @@ export function BuilderLayout() {
     setIsDownloading(true);
     setShowDownloadMenu(false);
     try {
-      const element = document.querySelector('.cv-preview') as HTMLElement;
-      if (!element) return;
-      // High scale for PDF resolution
-      const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+      const canvas = await generateCanvas(3); // Higher scale for PDF
       const imgData = canvas.toDataURL('image/png');
       
       const pdf = new jsPDF({
@@ -65,7 +118,21 @@ export function BuilderLayout() {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+      let heightLeft = pdfHeight;
+      let position = 0;
+      
+      // Add first page
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pdf.internal.pageSize.getHeight();
+      
+      // Add extra pages if content is taller than A4
+      while (heightLeft >= 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pdf.internal.pageSize.getHeight();
+      }
+      
       pdf.save(`${data.personalInfo.firstName || 'Resume'}_CV.pdf`);
     } catch (error) {
       console.error('Failed to generate rendering PDF:', error);
@@ -101,9 +168,17 @@ export function BuilderLayout() {
         </div>
 
         <div className="flex items-center gap-4">
+          <button
+            onClick={() => setRunTutorial(true)}
+            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors hidden sm:flex"
+            title="Start Tutorial"
+          >
+            <HelpCircle className="w-5 h-5" />
+          </button>
+          
           <button 
             onClick={() => setShowSettings(!showSettings)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200"
+            className="tour-settings-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors border border-slate-200"
           >
             <Settings className="w-4 h-4" />
             <span className="hidden sm:inline">Settings</span>
@@ -113,7 +188,7 @@ export function BuilderLayout() {
             <button 
               onClick={() => setShowDownloadMenu(!showDownloadMenu)}
               disabled={isDownloading}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
+              className="tour-download-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-75 disabled:cursor-not-allowed"
             >
               {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
               <span className="hidden sm:inline">{isDownloading ? 'Processing...' : 'Download'}</span>
@@ -360,18 +435,37 @@ export function BuilderLayout() {
           )}
 
           {/* Edit Pane */}
-          <div className={`w-full md:w-[45%] lg:w-[40%] bg-white border-r border-slate-200 h-full overflow-y-auto no-print ${activeTab === 'edit' ? 'block' : 'hidden md:block'}`}>
+          <div className={`tour-form-pane w-full md:w-[45%] lg:w-[40%] bg-white border-r border-slate-200 h-full overflow-y-auto no-print ${activeTab === 'edit' ? 'block' : 'hidden md:block'}`}>
             <FormPane />
           </div>
 
           {/* Preview Pane */}
-          <div className={`w-full md:w-[55%] lg:w-[60%] bg-slate-400/20 h-full overflow-y-auto p-4 md:p-8 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
+          <div className={`tour-preview-pane w-full md:w-[55%] lg:w-[60%] bg-slate-400/20 h-full overflow-y-auto p-4 md:p-8 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
             <div className="max-w-4xl mx-auto flex justify-center">
               <PreviewPane />
             </div>
           </div>
         </div>
       </main>
+      
+      <Joyride
+        steps={tutorialSteps}
+        run={runTutorial}
+        continuous={true}
+        showProgress={true}
+        showSkipButton={true}
+        styles={{
+          options: {
+            primaryColor: '#2563eb',
+            zIndex: 10000,
+          }
+        }}
+        callback={(data) => {
+          if (data.status === 'finished' || data.status === 'skipped') {
+            setRunTutorial(false);
+          }
+        }}
+      />
       
       {/* Template Gallery Modal */}
       {showTemplateModal && (

@@ -23,26 +23,50 @@
     margin: 0;
     size: auto;
   }
-  body, #root {
-    background-color: transparent !important;
+  
+  html, body, #root {
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    background-color: white !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
     margin: 0;
     padding: 0;
   }
-  /* Hide UI elements during print */
+
+  /* Hide everything we don't want */
   .no-print {
     display: none !important;
   }
   
+  /* Selectively target only the app layout wraps to reset their overflow and positioning */
+  body > * {
+    overflow: visible !important;
+  }
+  #root > .h-screen {
+    height: auto !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+  main.overflow-hidden {
+    overflow: visible !important;
+    position: static !important;
+  }
+  main .absolute.inset-0 {
+    position: static !important;
+    display: block !important;
+  }
+  .overflow-y-auto {
+    overflow: visible !important;
+  }
+
   /* Keep background colors for the CV */
   .cv-preview {
     box-shadow: none !important;
     margin: 0 !important;
-    padding: 2cm !important; /* Standard printable margins inside the content */
+    padding: 0 !important;
     width: 21cm !important;
     min-height: 29.7cm !important;
-    transform: none !important;
-    transform-origin: top left !important;
   }
 }
