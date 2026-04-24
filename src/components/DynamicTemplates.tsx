@@ -236,7 +236,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
          </div>
       )}
 
-      {certifications.length > 0 && (!config.layout.includes('sidebar') && !config.layout.includes('split') || config.styleMode === 'bd') && (
+      {certifications.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.certifications || 'Certifications'} />
           <ul className="list-disc list-inside text-sm space-y-1">
@@ -247,7 +247,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
         </section>
       )}
 
-      {languages.length > 0 && (!config.layout.includes('sidebar') && !config.layout.includes('split') || config.styleMode === 'bd') && (
+      {languages.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.languages || 'Languages'} />
           <div className="flex flex-wrap gap-4 text-sm mt-2">
@@ -258,7 +258,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
         </section>
       )}
 
-      {config.styleMode === 'bd' && <PersonalDetailsTable />}
+      <PersonalDetailsTable />
 
       {references.length > 0 && (
         <section>

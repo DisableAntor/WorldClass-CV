@@ -4,9 +4,9 @@ import { PreviewPane } from './PreviewPane';
 import { Download, LayoutTemplate, Settings, LayoutGrid, X, Image as ImageIcon, FileText, ChevronDown, Loader2, HelpCircle } from 'lucide-react';
 import { useResume } from '../context/ResumeContext';
 import { ALL_TEMPLATES } from './DynamicTemplates';
-import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
 import { Joyride, Step } from 'react-joyride';
+import { toPng } from 'html-to-image';
 
 export function BuilderLayout() {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -48,48 +48,18 @@ export function BuilderLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const generateCanvas = async (scale: number = 2) => {
-    const originalElement = document.querySelector('.cv-preview') as HTMLElement;
-    if (!originalElement) throw new Error("Preview element not found");
-
-    // Create a wrapper to hold the clone off-screen
-    const wrapper = document.createElement('div');
-    wrapper.style.position = 'absolute';
-    wrapper.style.top = '-9999px';
-    wrapper.style.left = '-9999px';
-    wrapper.style.width = '21cm'; // Hardcode A4 width
-    // Don't set height so it can grow
-    
-    // Clone the element deeply
-    const clone = originalElement.cloneNode(true) as HTMLElement;
-    
-    // Copy the exact inline styles, especially width and font-family
-    clone.style.cssText = originalElement.style.cssText;
-    clone.style.margin = '0';
-    clone.style.boxShadow = 'none';
-    
-    wrapper.appendChild(clone);
-    document.body.appendChild(wrapper);
-
-    try {
-      const canvas = await html2canvas(clone, { 
-        scale, 
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      return canvas;
-    } finally {
-      document.body.removeChild(wrapper);
-    }
-  };
-
   const downloadAsImage = async () => {
     setIsDownloading(true);
     setShowDownloadMenu(false);
     try {
-      const canvas = await generateCanvas(2);
-      const dataUrl = canvas.toDataURL('image/png');
+      const element = document.querySelector('.cv-preview') as HTMLElement;
+      if (!element) throw new Error("Preview element not found");
+      
+      const dataUrl = await toPng(element, { 
+        pixelRatio: 2,
+        backgroundColor: '#ffffff',
+        style: { margin: '0', boxShadow: 'none' } 
+      });
       const link = document.createElement('a');
       link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
       link.href = dataUrl;
@@ -106,8 +76,14 @@ export function BuilderLayout() {
     setIsDownloading(true);
     setShowDownloadMenu(false);
     try {
-      const canvas = await generateCanvas(3); // Higher scale for PDF
-      const imgData = canvas.toDataURL('image/png');
+      const element = document.querySelector('.cv-preview') as HTMLElement;
+      if (!element) throw new Error("Preview element not found");
+      
+      const imgData = await toPng(element, { 
+        pixelRatio: 3,
+        backgroundColor: '#ffffff',
+        style: { margin: '0', boxShadow: 'none' } 
+      });
       
       const pdf = new jsPDF({
         orientation: 'portrait',
@@ -115,8 +91,9 @@ export function BuilderLayout() {
         format: 'a4'
       });
       
+      const domRect = element.getBoundingClientRect();
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = (domRect.height * pdfWidth) / domRect.width;
       
       let heightLeft = pdfHeight;
       let position = 0;

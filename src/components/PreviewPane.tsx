@@ -54,6 +54,75 @@ export function PreviewPane({ overrideTemplate }: { overrideTemplate?: string })
   );
 }
 
+// --- EXTRAMS & COMMON COMPONENTS ---
+function CommonExtras({ data, headerColor = data.settings.themeColor, padding = '' }: { data: any, headerColor?: string, padding?: string }) {
+  const { personalInfo, certifications = [], languages = [], references = [], settings } = data;
+  const hasPersonalDetails = personalInfo.fathersName || personalInfo.mothersName || personalInfo.dateOfBirth || personalInfo.nationality || personalInfo.religion || personalInfo.maritalStatus || personalInfo.bloodGroup;
+
+  const titleClass = "text-xl font-bold uppercase tracking-wider mb-4 pb-1 border-b-2";
+
+  return (
+    <div className={`flex flex-col gap-6 mt-6 ${padding}`}>
+      {certifications.length > 0 && (
+        <div>
+          <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.certifications || 'Certifications'}</h2>
+          <ul className="list-disc list-inside text-sm space-y-2">
+            {certifications.map((cert: any) => (
+              <li key={cert.id}><strong className="text-slate-800">{cert.name}</strong> from {cert.issuer}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {languages.length > 0 && (
+        <div>
+          <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.languages || 'Languages'}</h2>
+          <div className="flex flex-wrap gap-4 text-sm">
+            {languages.map((lang: any) => (
+              <span key={lang.id} className="bg-slate-50 px-3 py-1 rounded border border-slate-200">
+                <strong className="text-slate-800">{lang.name}</strong> - {lang.proficiency}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {references.length > 0 && (
+        <div>
+          <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.references || 'References'}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            {references.map((ref: any, i: number) => (
+              <div key={ref.id} className="text-sm">
+                <p className="font-bold text-base text-slate-800">{ref.name}</p>
+                <p className="text-slate-600">{ref.designation}, {ref.company}</p>
+                {ref.phone && <p className="text-slate-600">Phone: {ref.phone}</p>}
+                {ref.email && <p className="text-slate-600">Email: {ref.email}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {hasPersonalDetails && (
+        <div>
+          <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.personalDetails || 'Personal Details'}</h2>
+          <table className="w-full text-sm text-left">
+            <tbody>
+              {personalInfo.fathersName && <tr><td className="font-bold text-slate-700 py-1 w-40">Father's Name</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.fathersName}</td></tr>}
+              {personalInfo.mothersName && <tr><td className="font-bold text-slate-700 py-1 w-40">Mother's Name</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.mothersName}</td></tr>}
+              {personalInfo.dateOfBirth && <tr><td className="font-bold text-slate-700 py-1 w-40">Date of Birth</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.dateOfBirth}</td></tr>}
+              {personalInfo.nationality && <tr><td className="font-bold text-slate-700 py-1 w-40">Nationality</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.nationality}</td></tr>}
+              {personalInfo.religion && <tr><td className="font-bold text-slate-700 py-1 w-40">Religion</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.religion}</td></tr>}
+              {personalInfo.maritalStatus && <tr><td className="font-bold text-slate-700 py-1 w-40">Marital Status</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.maritalStatus}</td></tr>}
+              {personalInfo.bloodGroup && <tr><td className="font-bold text-slate-700 py-1 w-40">Blood Group</td><td className="w-4">:</td><td className="text-slate-600">{personalInfo.bloodGroup}</td></tr>}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // --- TEMPLATES ---
 
 function ModernTemplate({ data }: { data: any }) {
@@ -225,6 +294,8 @@ function ModernTemplate({ data }: { data: any }) {
           </div>
         )}
 
+        <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4" />
+
       </div>
     </div>
   );
@@ -346,6 +417,8 @@ function ClassicTemplate({ data }: { data: any }) {
           </div>
         </div>
       )}
+
+      <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4 border-t border-slate-200" />
     </div>
   );
 }
@@ -465,6 +538,8 @@ function MinimalTemplate({ data }: { data: any }) {
               </div>
             </div>
           )}
+
+          <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4" />
         </div>
       </div>
     </div>
@@ -595,6 +670,10 @@ function ExecutiveTemplate({ data }: { data: any }) {
           )}
         </div>
       </div>
+
+      <div className="px-10">
+        <CommonExtras data={data} headerColor={settings.themeColor} padding="border-t border-slate-200 pt-8" />
+      </div>
     </div>
   );
 }
@@ -720,6 +799,10 @@ function CreativeTemplate({ data }: { data: any }) {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="p-12 pt-0">
+        <CommonExtras data={data} headerColor={settings.themeColor} />
       </div>
     </div>
   );
