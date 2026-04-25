@@ -1,3 +1,4 @@
+import { useReactToPrint } from 'react-to-print';
 import React, { useState, useRef, useEffect } from 'react';
 import { FormPane } from './FormPane';
 import { PreviewPane } from './PreviewPane';
@@ -34,6 +35,12 @@ export function BuilderLayout() {
 
   const [showDownloadMenu, setShowDownloadMenu] = useState(false);
   const downloadMenuRef = useRef<HTMLDivElement>(null);
+  const contentToPrintRef = useRef<HTMLDivElement>(null);
+
+  const reactToPrintFn = useReactToPrint({
+    contentRef: contentToPrintRef,
+    documentTitle: 'Resume',
+  });
 
   // Close download menu on click outside
   useEffect(() => {
@@ -75,31 +82,6 @@ export function BuilderLayout() {
     setShowDownloadMenu(false);
   };
   
-  const downloadDocx = async () => {
-    try {
-      const htmlToDocx = (await import('html-to-docx')).default;
-      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
-      if (!cvElement) return;
-
-      // Extract inline styles for better compatibility if needed, 
-      // but html-to-docx handles basic markup
-      const htmlString = cvElement.outerHTML;
-      const fileBuffer = await htmlToDocx(htmlString, null, {
-        table: { row: { cantSplit: true } },
-        footer: true,
-        pageNumber: true,
-      });
-
-      const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const saveAs = (await import('file-saver')).saveAs;
-      saveAs(blob, 'resume.docx');
-    } catch(e) {
-      console.error(e);
-      alert('Failed to generate DOCX.');
-    }
-    setShowDownloadMenu(false);
-  };
-
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-100 font-sans">
       {/* Header */}
@@ -156,7 +138,7 @@ export function BuilderLayout() {
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 z-50">
                 <div className="py-1">
                   <button 
-                    onClick={() => { window.print(); setShowDownloadMenu(false); }}
+                    onClick={() => { reactToPrintFn(); setShowDownloadMenu(false); }}
                     className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                   >
                     Save as PDF
@@ -166,12 +148,6 @@ export function BuilderLayout() {
                     className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
                   >
                     Save as PNG
-                  </button>
-                  <button 
-                    onClick={downloadDocx}
-                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
-                  >
-                    Save as DOCX
                   </button>
                   <button 
                     onClick={downloadJson}
@@ -444,7 +420,9 @@ export function BuilderLayout() {
           {/* Preview Pane */}
           <div className={`tour-preview-pane w-full md:w-[55%] lg:w-[60%] bg-slate-400/20 h-full overflow-y-auto p-4 md:p-8 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
             <div className="max-w-4xl mx-auto flex justify-center">
-              <PreviewPane />
+              <div ref={contentToPrintRef}>
+                <PreviewPane />
+              </div>
             </div>
           </div>
         </div>
