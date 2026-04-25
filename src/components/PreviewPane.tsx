@@ -65,6 +65,17 @@ export function PreviewPane({ overrideTemplate }: { overrideTemplate?: string })
   const currentFont = fontVariables[settings.fontFamily] || 'var(--font-sans)';
   const currentTemplate = overrideTemplate || settings.template;
 
+  const { hiddenSections = [] } = settings;
+  const filteredData = { ...data };
+  if (hiddenSections.includes('summary')) filteredData.summary = '';
+  if (hiddenSections.includes('experience')) filteredData.experience = [];
+  if (hiddenSections.includes('education')) filteredData.education = [];
+  if (hiddenSections.includes('projects')) filteredData.projects = [];
+  if (hiddenSections.includes('skills')) filteredData.skills = [];
+  if (hiddenSections.includes('languages')) filteredData.languages = [];
+  if (hiddenSections.includes('certifications')) filteredData.certifications = [];
+  if (hiddenSections.includes('references')) filteredData.references = [];
+
   return (
     <div 
       className="cv-preview bg-white shadow-xl min-h-[29.7cm] flex flex-col mx-auto transition-all"
@@ -74,13 +85,13 @@ export function PreviewPane({ overrideTemplate }: { overrideTemplate?: string })
       }}
     >
       {/* Template selector logic */}
-      {currentTemplate === 'modern' && <ModernTemplate data={data} />}
-      {currentTemplate === 'classic' && <ClassicTemplate data={data} />}
-      {currentTemplate === 'minimal' && <MinimalTemplate data={data} />}
-      {currentTemplate === 'executive' && <ExecutiveTemplate data={data} />}
-      {currentTemplate === 'creative' && <CreativeTemplate data={data} />}
-      {currentTemplate === 'bd-standard' && <BdStandardTemplate data={data} />}
-      {DYNAMIC_CONFIGS[currentTemplate] && <DynamicTemplate data={data} config={DYNAMIC_CONFIGS[currentTemplate]} />}
+      {currentTemplate === 'modern' && <ModernTemplate data={filteredData} />}
+      {currentTemplate === 'classic' && <ClassicTemplate data={filteredData} />}
+      {currentTemplate === 'minimal' && <MinimalTemplate data={filteredData} />}
+      {currentTemplate === 'executive' && <ExecutiveTemplate data={filteredData} />}
+      {currentTemplate === 'creative' && <CreativeTemplate data={filteredData} />}
+      {currentTemplate === 'bd-standard' && <BdStandardTemplate data={filteredData} />}
+      {DYNAMIC_CONFIGS[currentTemplate] && <DynamicTemplate data={filteredData} config={DYNAMIC_CONFIGS[currentTemplate]} />}
     </div>
   );
 }
@@ -1014,6 +1025,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
 
       <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2" />
 
+      {!settings.hiddenSections?.includes('personalDetails') && (
       <div className="mb-6 break-inside-avoid">
         <h3 className="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.personalDetails || 'Personal Details'}</h3>
         <table className="w-full text-[15px] px-2">
@@ -1028,6 +1040,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           </tbody>
         </table>
       </div>
+      )}
 
       {references?.length > 0 && (
         <div className="mb-6 break-inside-avoid">

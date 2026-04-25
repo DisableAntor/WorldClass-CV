@@ -396,6 +396,42 @@ export function BuilderLayout() {
                      </div>
                    </div>
                 </div>
+                <div className="border-t border-slate-200 pt-6">
+                  <h3 className="text-base font-semibold text-slate-800 mb-4">Manage Visible Sections</h3>
+                  <div className="space-y-3">
+                    {[
+                      { id: 'summary', label: 'Summary' },
+                      { id: 'experience', label: 'Experience' },
+                      { id: 'education', label: 'Education' },
+                      { id: 'projects', label: 'Projects' },
+                      { id: 'skills', label: 'Skills' },
+                      { id: 'languages', label: 'Languages' },
+                      { id: 'certifications', label: 'Certifications' },
+                      { id: 'references', label: 'References' },
+                      { id: 'personalDetails', label: 'Personal Details' }
+                    ].map(section => {
+                      const isHidden = data.settings.hiddenSections?.includes(section.id);
+                      return (
+                        <div key={section.id} className="flex items-center justify-between">
+                          <span className="text-sm font-medium text-slate-700">{section.label}</span>
+                          <button
+                            onClick={() => {
+                              const arr = data.settings.hiddenSections || [];
+                              if (isHidden) {
+                                updateSettings('hiddenSections', arr.filter((s: string) => s !== section.id));
+                              } else {
+                                updateSettings('hiddenSections', [...arr, section.id]);
+                              }
+                            }}
+                            className={`w-10 h-5 rounded-full relative transition-colors focus:outline-none flex-shrink-0 ${!isHidden ? 'bg-blue-600' : 'bg-slate-300'}`}
+                          >
+                            <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${!isHidden ? 'translate-x-[20px]' : 'translate-x-0'}`} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           )}

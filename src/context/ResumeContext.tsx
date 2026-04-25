@@ -6,7 +6,7 @@ interface ResumeContextType {
   setData: React.Dispatch<React.SetStateAction<ResumeData>>;
   updatePersonalInfo: (field: string, value: string) => void;
   updateSummary: (value: string) => void;
-  updateSettings: (field: string, value: string) => void;
+  updateSettings: (field: string, value: any) => void;
   // Generic list operations
   addListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, item: any) => void;
   updateListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, id: string, field: string, value: any) => void;
@@ -104,6 +104,7 @@ const initialData: ResumeData = {
     template: 'modern',
     photoShape: 'circle',
     photoPosition: 'right',
+    hiddenSections: [],
     sectionTitles: {
       summary: 'Profile',
       experience: 'Experience',

@@ -65,6 +65,7 @@ export const ALL_TEMPLATES = [
 
 export function DynamicTemplate({ data, config }: { data: any, config: DynamicConfig }) {
   const { personalInfo, summary, experience = [], education = [], skills = [], projects = [], languages = [], certifications = [], references = [], settings } = data;
+  const { hiddenSections = [] } = settings;
   
   const isDark = config.theme === 'dark';
   const bgMain = isDark ? 'bg-slate-900 text-slate-200' : 'bg-white text-slate-800';
@@ -117,6 +118,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
   );
 
   const PersonalDetailsTable = () => {
+    if (hiddenSections.includes('personalDetails')) return null;
     if (!personalInfo.fathersName && !personalInfo.mothersName && !personalInfo.dateOfBirth && !personalInfo.nationality && !personalInfo.religion && !personalInfo.maritalStatus) return null;
     return (
       <section>
@@ -138,14 +140,14 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
 
   const MainContent = () => (
     <div className="flex flex-col gap-8 w-full">
-      {summary && (
+      {!hiddenSections.includes('summary') && summary && (
         <section>
           <SectionTitle title={settings.sectionTitles?.summary || 'Profile'} />
           <p className="text-sm leading-relaxed">{summary}</p>
         </section>
       )}
 
-      {experience.length > 0 && (
+      {!hiddenSections.includes('experience') && experience.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.experience || 'Experience'} />
           <div className="flex flex-col gap-6">
@@ -167,7 +169,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
         </section>
       )}
 
-      {projects.length > 0 && (
+      {!hiddenSections.includes('projects') && projects.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.projects || 'Projects'} />
           <div className="flex flex-col gap-6">
@@ -219,7 +221,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
       
       {(!config.layout.includes('sidebar') && !config.layout.includes('split')) && (
          <div className="grid grid-cols-2 gap-8 mt-4">
-           {skills.length > 0 && (
+           {!hiddenSections.includes('skills') && skills.length > 0 && (
             <section>
               <SectionTitle title={settings.sectionTitles?.skills || 'Skills'} />
               <div className="flex flex-wrap gap-2">
@@ -227,7 +229,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
               </div>
             </section>
            )}
-           {education.length > 0 && (
+           {!hiddenSections.includes('education') && education.length > 0 && (
             <section>
               <SectionTitle title={settings.sectionTitles?.education || 'Education'} />
               {config.styleMode === 'bd' ? (
@@ -267,7 +269,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
          </div>
       )}
 
-      {certifications.length > 0 && (
+      {!hiddenSections.includes('certifications') && certifications.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.certifications || 'Certifications'} />
           <ul className="list-disc list-inside text-sm space-y-1">
@@ -278,7 +280,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
         </section>
       )}
 
-      {languages.length > 0 && (
+      {!hiddenSections.includes('languages') && languages.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.languages || 'Languages'} />
           <div className="flex flex-wrap gap-4 text-sm mt-2">
@@ -291,7 +293,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
 
       <PersonalDetailsTable />
 
-      {references.length > 0 && (
+      {!hiddenSections.includes('references') && references.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.references || 'References'} />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -312,7 +314,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
 
   const SideContent = () => (
     <div className="flex flex-col gap-8 w-full">
-      {skills.length > 0 && (
+      {!hiddenSections.includes('skills') && skills.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.skills || 'Skills'} />
           <div className="flex flex-col gap-3">
@@ -327,7 +329,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
           </div>
         </section>
       )}
-      {education.length > 0 && (
+      {!hiddenSections.includes('education') && education.length > 0 && (
         <section>
           <SectionTitle title={settings.sectionTitles?.education || 'Education'} />
           <div className="flex flex-col gap-6">

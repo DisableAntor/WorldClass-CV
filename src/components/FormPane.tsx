@@ -55,6 +55,7 @@ export function FormPane() {
       </div>
 
       <div className="flex-1">
+        {!data.settings.hiddenSections?.includes('personalDetails') && (
         <Accordion title="Personal Information" defaultOpen>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2 flex flex-col sm:flex-row items-center gap-4 mb-2 p-4 bg-slate-50 border border-slate-200 rounded-lg">
@@ -109,16 +110,20 @@ export function FormPane() {
             </div>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('summary') && (
         <Accordion title="Professional Summary">
            <Textarea 
              placeholder="Write a brief professional summary..."
              value={data.summary}
              onChange={(e) => updateSummary(e.target.value)}
              className="min-h-[120px]"
-           />
-        </Accordion>
+            />
+         </Accordion>
+         )}
 
+         {!data.settings.hiddenSections?.includes('experience') && (
         <Accordion title="Work Experience">
           <div className="space-y-6">
             {(data.experience || []).map((exp, index) => (
@@ -163,7 +168,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('education') && (
         <Accordion title="Education">
           <div className="space-y-6">
             {(data.education || []).map((edu) => (
@@ -197,7 +204,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('projects') && (
         <Accordion title="Projects">
           <div className="space-y-6">
             {(data.projects || []).map((proj) => (
@@ -235,7 +244,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('skills') && (
         <Accordion title="Skills">
           <div className="space-y-4">
             {(data.skills || []).map(skill => (
@@ -276,7 +287,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('languages') && (
         <Accordion title="Languages">
           <div className="space-y-4">
             {(data.languages || []).map(language => (
@@ -316,7 +329,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('certifications') && (
         <Accordion title="Certifications">
           <div className="space-y-6">
             {(data.certifications || []).map((cert) => (
@@ -344,7 +359,9 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
+        {!data.settings.hiddenSections?.includes('references') && (
         <Accordion title="References">
           <div className="space-y-6">
             {(data.references || []).map((ref) => (
@@ -375,6 +392,7 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+        )}
 
         {/* Custom Sections */}
         {(data.customSections || []).map(section => (
