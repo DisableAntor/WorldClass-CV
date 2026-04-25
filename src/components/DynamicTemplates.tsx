@@ -150,7 +150,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
           <SectionTitle title={settings.sectionTitles?.experience || 'Experience'} />
           <div className="flex flex-col gap-6">
             {experience.map((exp: any) => (
-              <div key={exp.id}>
+              <div key={exp.id} className="break-inside-avoid">
                 <div className="flex justify-between items-baseline mb-1">
                   <h3 className={`font-bold text-lg ${textHeader}`}>{exp.jobTitle}</h3>
                   <span className="text-sm font-semibold opacity-70">
@@ -172,7 +172,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
           <SectionTitle title={settings.sectionTitles?.projects || 'Projects'} />
           <div className="flex flex-col gap-6">
             {projects.map((proj: any) => (
-              <div key={proj.id}>
+              <div key={proj.id} className="break-inside-avoid">
                 <div className="flex justify-between items-baseline mb-1">
                   <h3 className={`font-bold text-lg ${textHeader}`}>{proj.title}</h3>
                   <span className="text-sm font-semibold opacity-70">
@@ -188,6 +188,34 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
           </div>
         </section>
       )}
+
+      {(data.customSections || []).map(section => (
+        section.items?.length > 0 && (
+          <section key={section.id}>
+            <SectionTitle title={section.title || 'Custom Section'} />
+            <div className="flex flex-col gap-6">
+              {section.items.map((item: any) => (
+                <div key={item.id} className="break-inside-avoid">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <h3 className={`font-bold text-lg ${textHeader}`}>{item.title}</h3>
+                    {item.date && (
+                      <span className="text-sm font-semibold opacity-70">{item.date}</span>
+                    )}
+                  </div>
+                  {item.subtitle && (
+                    <div className="text-sm font-bold mb-2" style={{ color: primaryAccent }}>
+                       {item.subtitle}
+                    </div>
+                  )}
+                  {item.description && (
+                    <div className="text-sm space-y-1 opacity-90" dangerouslySetInnerHTML={{ __html: item.description.replace(/\n/g, '<br/>') }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      ))}
       
       {(!config.layout.includes('sidebar') && !config.layout.includes('split')) && (
          <div className="grid grid-cols-2 gap-8 mt-4">
@@ -224,7 +252,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
               ) : (
                 <div className="flex flex-col gap-4">
                   {education.map((edu: any) => (
-                    <div key={edu.id}>
+                    <div key={edu.id} className="break-inside-avoid">
                       <h3 className={`font-bold text-base ${textHeader}`}>{edu.degree}</h3>
                       <p className="text-sm font-bold opacity-80" style={{ color: primaryAccent }}>{edu.school}</p>
                       <span className="text-xs font-semibold opacity-70 block">
@@ -304,7 +332,7 @@ export function DynamicTemplate({ data, config }: { data: any, config: DynamicCo
           <SectionTitle title={settings.sectionTitles?.education || 'Education'} />
           <div className="flex flex-col gap-6">
             {education.map((edu: any) => (
-              <div key={edu.id}>
+              <div key={edu.id} className="break-inside-avoid">
                 <h3 className={`font-bold text-base ${textHeader} leading-tight mb-1`}>{edu.degree}</h3>
                 <p className="text-sm font-bold opacity-80 mb-1" style={{ color: primaryAccent }}>{edu.school}</p>
                 <span className="text-xs font-semibold opacity-70 block mb-1">

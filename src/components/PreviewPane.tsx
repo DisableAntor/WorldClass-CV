@@ -19,6 +19,37 @@ function getShapeClass(shape?: string) {
   return 'rounded-full';
 }
 
+function CustomSectionsRenderer({ data, titleClass, subtitleClass, dividerClass, headerColor }: { data: any, titleClass?: string, subtitleClass?: string, dividerClass?: string, headerColor?: string }) {
+  const { customSections = [], settings } = data;
+  if (!customSections || customSections.length === 0) return null;
+
+  return (
+    <>
+      {customSections.map((section: any) => (
+        section.items?.length > 0 && (
+          <div key={section.id} className="mt-6">
+            <h2 className={titleClass || "text-xl font-bold uppercase tracking-wider mb-4 pb-1 border-b-2"} style={{ borderColor: headerColor, color: headerColor }}>
+              {section.title || 'Custom Section'}
+            </h2>
+            <div className="flex flex-col gap-6">
+              {section.items.map((item: any) => (
+                <div key={item.id} className={`break-inside-avoid ${dividerClass || ''}`}>
+                  <div className="flex flex-col sm:flex-row sm:justify-between items-baseline mb-1">
+                    <h3 className="font-bold text-base text-slate-800">{item.title}</h3>
+                    {item.date && <span className="text-sm font-semibold opacity-80 shrink-0">{item.date}</span>}
+                  </div>
+                  {item.subtitle && <div className={subtitleClass || "text-sm font-bold opacity-80 mb-2"} style={headerColor ? { color: headerColor } : {}}>{item.subtitle}</div>}
+                  {item.description && <div className="text-sm space-y-1 opacity-90 text-slate-700" dangerouslySetInnerHTML={{ __html: item.description.replace(/\n/g, '<br/>') }} />}
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      ))}
+    </>
+  );
+}
+
 export function PreviewPane({ overrideTemplate }: { overrideTemplate?: string }) {
   const { data } = useResume();
   const { personalInfo, summary, experience = [], education = [], skills = [], settings } = data;
@@ -68,7 +99,7 @@ function CommonExtras({ data, headerColor = data.settings.themeColor, padding = 
           <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.certifications || 'Certifications'}</h2>
           <ul className="list-disc list-inside text-sm space-y-2">
             {certifications.map((cert: any) => (
-              <li key={cert.id}><strong className="text-slate-800">{cert.name}</strong> from {cert.issuer}</li>
+              <li key={cert.id} className="break-inside-avoid"><strong className="text-slate-800">{cert.name}</strong> from {cert.issuer}</li>
             ))}
           </ul>
         </div>
@@ -79,7 +110,7 @@ function CommonExtras({ data, headerColor = data.settings.themeColor, padding = 
           <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.languages || 'Languages'}</h2>
           <div className="flex flex-wrap gap-4 text-sm">
             {languages.map((lang: any) => (
-              <span key={lang.id} className="bg-slate-50 px-3 py-1 rounded border border-slate-200">
+              <span key={lang.id} className="break-inside-avoid bg-slate-50 px-3 py-1 rounded border border-slate-200">
                 <strong className="text-slate-800">{lang.name}</strong> - {lang.proficiency}
               </span>
             ))}
@@ -92,7 +123,7 @@ function CommonExtras({ data, headerColor = data.settings.themeColor, padding = 
           <h2 className={titleClass} style={{ borderColor: headerColor, color: headerColor }}>{settings.sectionTitles?.references || 'References'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {references.map((ref: any, i: number) => (
-              <div key={ref.id} className="text-sm">
+              <div key={ref.id} className="break-inside-avoid text-sm">
                 <p className="font-bold text-base text-slate-800">{ref.name}</p>
                 <p className="text-slate-600">{ref.designation}, {ref.company}</p>
                 {ref.phone && <p className="text-slate-600">Phone: {ref.phone}</p>}
@@ -249,7 +280,7 @@ function ModernTemplate({ data }: { data: any }) {
             </h2>
             <div className="flex flex-col gap-6">
               {experience.map((exp: any) => (
-                <div key={exp.id}>
+                <div key={exp.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="font-bold text-base">{exp.jobTitle}</h3>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
@@ -274,7 +305,7 @@ function ModernTemplate({ data }: { data: any }) {
             </h2>
             <div className="flex flex-col gap-4">
               {education.map((edu: any) => (
-                <div key={edu.id}>
+                <div key={edu.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="font-bold text-base">{edu.degree}</h3>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
@@ -295,7 +326,7 @@ function ModernTemplate({ data }: { data: any }) {
             </h2>
             <div className="flex flex-col gap-5">
               {projects.map((proj: any) => (
-                <div key={proj.id}>
+                <div key={proj.id} className="break-inside-avoid">
                   <div className="flex justify-between items-baseline mb-1">
                     <h3 className="font-bold text-base">{proj.title}</h3>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 shrink-0">
@@ -313,6 +344,7 @@ function ModernTemplate({ data }: { data: any }) {
           </div>
         )}
 
+        <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-lg font-bold tracking-widest uppercase mb-4 text-slate-800 border-b-2 pb-2" />
         <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4" />
 
       </div>
@@ -368,7 +400,7 @@ function ClassicTemplate({ data }: { data: any }) {
           <h2 className="text-lg font-bold uppercase tracking-widest mb-4 border-b border-slate-200 pb-1" style={{ color: settings.themeColor }}>{settings.sectionTitles?.experience || 'Experience'}</h2>
           <div className="space-y-4">
             {experience.map((exp: any) => (
-              <div key={exp.id}>
+              <div key={exp.id} className="break-inside-avoid">
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-base">{exp.jobTitle}</h3>
                   <span className="text-sm font-semibold text-slate-600">
@@ -390,7 +422,7 @@ function ClassicTemplate({ data }: { data: any }) {
           <h2 className="text-lg font-bold uppercase tracking-widest mb-4 border-b border-slate-200 pb-1" style={{ color: settings.themeColor }}>{settings.sectionTitles?.education || 'Education'}</h2>
           <div className="space-y-4">
             {education.map((edu: any) => (
-              <div key={edu.id}>
+              <div key={edu.id} className="break-inside-avoid">
                 <div className="flex justify-between items-baseline mb-1">
                   <h3 className="font-bold text-base">{edu.degree}</h3>
                   <span className="text-sm font-semibold text-slate-600">
@@ -410,7 +442,7 @@ function ClassicTemplate({ data }: { data: any }) {
           <h2 className="text-lg font-bold uppercase tracking-widest mb-4 border-b border-slate-200 pb-1" style={{ color: settings.themeColor }}>{settings.sectionTitles?.projects || 'Projects'}</h2>
           <div className="space-y-4">
             {projects.map((proj: any) => (
-              <div key={proj.id}>
+              <div key={proj.id} className="break-inside-avoid">
                 <div className="flex justify-between items-baseline">
                   <h3 className="font-bold text-base">{proj.title} <span className="font-normal text-sm italic text-slate-600 ml-2">{proj.subtitle}</span></h3>
                   <span className="text-sm font-semibold text-slate-600">
@@ -439,6 +471,7 @@ function ClassicTemplate({ data }: { data: any }) {
         </div>
       )}
 
+      <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-lg font-bold uppercase tracking-widest mb-4 border-b border-slate-200 pb-1" />
       <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4 border-t border-slate-200" />
     </div>
   );
@@ -510,7 +543,7 @@ function MinimalTemplate({ data }: { data: any }) {
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">{settings.sectionTitles?.experience || 'Work Experience'}</h2>
               <div className="space-y-8">
                 {experience.map((exp: any) => (
-                  <div key={exp.id} className="group cursor-default relative">
+                  <div key={exp.id} className="break-inside-avoid group cursor-default relative">
                     <div className="absolute -left-6 top-1.5 w-2 h-2 rounded-full hidden sm:block" style={{ backgroundColor: settings.themeColor }} />
                     <div className="flex gap-4 sm:gap-0 flex-col sm:flex-row sm:justify-between items-baseline mb-2">
                       <h3 className="text-lg font-bold text-slate-900">{exp.jobTitle}</h3>
@@ -531,7 +564,7 @@ function MinimalTemplate({ data }: { data: any }) {
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">{settings.sectionTitles?.education || 'Education'}</h2>
               <div className="space-y-6">
                 {education.map((edu: any) => (
-                  <div key={edu.id}>
+                  <div key={edu.id} className="break-inside-avoid">
                     <div className="flex flex-col sm:flex-row sm:justify-between items-baseline mb-1">
                       <h3 className="text-base font-bold text-slate-900">{edu.degree}</h3>
                       <span className="text-xs font-semibold text-slate-400 shrink-0">
@@ -550,7 +583,7 @@ function MinimalTemplate({ data }: { data: any }) {
               <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">{settings.sectionTitles?.projects || 'Projects'}</h2>
               <div className="space-y-8">
                 {projects.map((proj: any) => (
-                  <div key={proj.id} className="group cursor-default relative">
+                  <div key={proj.id} className="break-inside-avoid group cursor-default relative">
                     <div className="absolute -left-6 top-1.5 w-2 h-2 rounded-full hidden sm:block" style={{ backgroundColor: settings.themeColor }} />
                     <div className="flex gap-4 sm:gap-0 flex-col sm:flex-row sm:justify-between items-baseline mb-2">
                       <h3 className="text-lg font-bold text-slate-900">{proj.title}</h3>
@@ -566,6 +599,7 @@ function MinimalTemplate({ data }: { data: any }) {
             </div>
           )}
 
+          <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6" />
           <CommonExtras data={data} headerColor={settings.themeColor} padding="pt-4" />
         </div>
       </div>
@@ -620,7 +654,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
               </h2>
               <div className="flex flex-col gap-6">
                 {experience.map((exp: any) => (
-                  <div key={exp.id}>
+                  <div key={exp.id} className="break-inside-avoid">
                     <div className="flex justify-between items-baseline mb-1">
                       <h3 className="font-bold text-lg text-slate-800">{exp.jobTitle}</h3>
                       <span className="text-sm font-semibold text-slate-500 shrink-0">
@@ -643,7 +677,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
               </h2>
               <div className="flex flex-col gap-6">
                 {projects.map((proj: any) => (
-                  <div key={proj.id}>
+                  <div key={proj.id} className="break-inside-avoid">
                     <div className="flex justify-between items-baseline mb-1">
                       <h3 className="font-bold text-lg text-slate-800">{proj.title}</h3>
                       <span className="text-sm font-semibold text-slate-500 shrink-0">
@@ -687,7 +721,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
               </h2>
               <div className="flex flex-col gap-4">
                 {education.map((edu: any) => (
-                  <div key={edu.id}>
+                  <div key={edu.id} className="break-inside-avoid">
                     <h3 className="font-bold text-base text-slate-800 leading-tight mb-1">{edu.degree}</h3>
                     <p className="text-sm font-bold uppercase tracking-wider mb-1" style={{ color: settings.themeColor }}>{edu.school}</p>
                     <span className="text-xs font-semibold text-slate-500 block mb-1">
@@ -703,6 +737,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
       </div>
 
       <div className="px-10">
+        <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-2xl font-bold uppercase tracking-wider mb-6 flex items-center gap-4 text-slate-900" subtitleClass="text-sm font-bold uppercase tracking-wider" />
         <CommonExtras data={data} headerColor={settings.themeColor} padding="border-t border-slate-200 pt-8" />
       </div>
     </div>
@@ -763,7 +798,7 @@ function CreativeTemplate({ data }: { data: any }) {
               <h2 className="text-3xl font-black mb-6 uppercase tracking-tighter" style={{ color: settings.themeColor }}>{settings.sectionTitles?.experience || 'Experience'}</h2>
               <div className="space-y-8 pl-4 border-l-2" style={{ borderColor: `${settings.themeColor}30` }}>
                 {experience.map((exp: any) => (
-                  <div key={exp.id} className="relative">
+                  <div key={exp.id} className="break-inside-avoid relative">
                     <div className="absolute -left-[21px] top-1.5 w-3 h-3 rounded-full" style={{ backgroundColor: settings.themeColor }} />
                     <h3 className="font-bold text-xl">{exp.jobTitle}</h3>
                     <div className="flex gap-2 items-center mb-3">
@@ -785,7 +820,7 @@ function CreativeTemplate({ data }: { data: any }) {
               <h2 className="text-3xl font-black mb-6 uppercase tracking-tighter" style={{ color: settings.themeColor }}>{settings.sectionTitles?.projects || 'Projects'}</h2>
               <div className="grid grid-cols-2 gap-6">
                 {projects.map((proj: any) => (
-                  <div key={proj.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                  <div key={proj.id} className="break-inside-avoid bg-slate-50 p-5 rounded-2xl border border-slate-100">
                     <h3 className="font-bold text-lg mb-1">{proj.title}</h3>
                     <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">{proj.subtitle}</p>
                     <div className="text-xs text-slate-600 space-y-1 mb-2" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
@@ -820,7 +855,7 @@ function CreativeTemplate({ data }: { data: any }) {
               <h2 className="text-2xl font-black mb-5 uppercase tracking-tighter" style={{ color: settings.themeColor }}>{settings.sectionTitles?.education || 'Education'}</h2>
               <div className="space-y-6">
                 {education.map((edu: any) => (
-                  <div key={edu.id} className="bg-slate-50 p-5 rounded-2xl border-l-4" style={{ borderColor: settings.themeColor }}>
+                  <div key={edu.id} className="break-inside-avoid bg-slate-50 p-5 rounded-2xl border-l-4" style={{ borderColor: settings.themeColor }}>
                     <h3 className="font-bold text-base leading-tight mb-1">{edu.degree}</h3>
                     <p className="text-sm font-bold text-slate-500 mb-1">{edu.school}</p>
                     <span className="text-xs font-bold text-slate-400 block mb-2">
@@ -836,6 +871,7 @@ function CreativeTemplate({ data }: { data: any }) {
       </div>
 
       <div className="p-12 pt-0">
+        <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-3xl font-black mb-6 uppercase tracking-tighter" dividerClass="bg-slate-50 p-5 rounded-2xl border border-slate-100" />
         <CommonExtras data={data} headerColor={settings.themeColor} />
       </div>
     </div>
@@ -871,7 +907,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
       </div>
 
       {summary && (
-        <div className="mb-6">
+        <div className="mb-6 break-inside-avoid">
           <h3 className="text-base font-bold uppercase underline mb-2 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.summary || 'Career Objective'}</h3>
           <p className="text-justify px-2 leading-relaxed">{summary}</p>
         </div>
@@ -882,7 +918,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.experience || 'Experience'}</h3>
           <div className="px-2 space-y-4">
             {experience.map((exp: any, i: number) => (
-              <div key={exp.id}>
+              <div key={exp.id} className="break-inside-avoid">
                 <p className="font-bold">{i + 1}. {exp.jobTitle}</p>
                 <div className="pl-4">
                   <p><strong>Organization:</strong> {exp.employer}</p>
@@ -911,7 +947,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
             </thead>
             <tbody>
               {education.map((edu: any) => (
-                <tr key={edu.id}>
+                <tr key={edu.id} className="break-inside-avoid">
                   <td className="border border-black px-2 py-1.5 font-bold">{edu.degree}</td>
                   <td className="border border-black px-2 py-1.5">{edu.school}</td>
                   <td className="border border-black px-2 py-1.5">{edu.description || '-'}</td>
@@ -928,7 +964,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-2 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.skills || 'Computer/Technical Skills'}</h3>
           <ul className="list-disc list-inside px-2">
             {skills.map((skill: any) => (
-              <li key={skill.id}><strong>{skill.name}</strong> ({skill.level})</li>
+              <li key={skill.id} className="break-inside-avoid"><strong>{skill.name}</strong> ({skill.level})</li>
             ))}
           </ul>
         </div>
@@ -939,7 +975,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-2 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.languages || 'Language Proficiency'}</h3>
           <ul className="list-disc list-inside px-2">
             {languages.map((lang: any) => (
-              <li key={lang.id}><strong>{lang.name}</strong> - {lang.proficiency} in reading, writing and speaking.</li>
+              <li key={lang.id} className="break-inside-avoid"><strong>{lang.name}</strong> - {lang.proficiency} in reading, writing and speaking.</li>
             ))}
           </ul>
         </div>
@@ -950,7 +986,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-2 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.certifications || 'Certifications / Training'}</h3>
           <ul className="list-disc list-inside px-2">
             {certifications.map((cert: any) => (
-              <li key={cert.id}><strong>{cert.name}</strong> from {cert.issuer} ({formatDate(cert.date)}) {cert.link && <a href={cert.link} className="text-blue-600 underline text-sm ml-2">Link</a>}</li>
+              <li key={cert.id} className="break-inside-avoid"><strong>{cert.name}</strong> from {cert.issuer} ({formatDate(cert.date)}) {cert.link && <a href={cert.link} className="text-blue-600 underline text-sm ml-2">Link</a>}</li>
             ))}
           </ul>
         </div>
@@ -961,7 +997,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.projects || 'Projects'}</h3>
           <div className="px-2 space-y-4">
             {projects.map((proj: any, i: number) => (
-              <div key={proj.id}>
+              <div key={proj.id} className="break-inside-avoid">
                 <p className="font-bold">{i + 1}. {proj.title}</p>
                 <div className="pl-4">
                   <p><strong>Role:</strong> {proj.subtitle}</p>
@@ -976,7 +1012,9 @@ export function BdStandardTemplate({ data }: { data: any }) {
         </div>
       )}
 
-      <div className="mb-6">
+      <CustomSectionsRenderer data={data} headerColor={settings.themeColor} titleClass="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2" />
+
+      <div className="mb-6 break-inside-avoid">
         <h3 className="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.personalDetails || 'Personal Details'}</h3>
         <table className="w-full text-[15px] px-2">
           <tbody>
@@ -996,7 +1034,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
           <h3 className="text-base font-bold uppercase underline mb-3 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.references || 'References'}</h3>
           <div className="grid grid-cols-2 gap-8 px-2">
             {references.map((ref: any, index: number) => (
-              <div key={ref.id}>
+              <div key={ref.id} className="break-inside-avoid">
                 <p className="font-bold underline mb-1">Reference: {index + 1}</p>
                 <p className="font-bold">{ref.name}</p>
                 <p>{ref.designation}</p>

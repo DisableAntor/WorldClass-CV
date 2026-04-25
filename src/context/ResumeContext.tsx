@@ -8,9 +8,12 @@ interface ResumeContextType {
   updateSummary: (value: string) => void;
   updateSettings: (field: string, value: string) => void;
   // Generic list operations
-  addListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, item: any) => void;
-  updateListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, id: string, field: string, value: any) => void;
-  removeListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, id: string) => void;
+  addListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, item: any) => void;
+  updateListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, id: string, field: string, value: any) => void;
+  removeListItem: (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, id: string) => void;
+  addCustomSectionItem: (sectionId: string, item: any) => void;
+  updateCustomSectionItem: (sectionId: string, itemId: string, field: string, value: any) => void;
+  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
 }
 
 const initialData: ResumeData = {
@@ -174,26 +177,59 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const addListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, item: any) => {
+  const addListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, item: any) => {
     setData(prev => ({
       ...prev,
-      [section]: [...(prev[section] as any[]), { ...item, id: Math.random().toString(36).substring(2, 9) }]
+      [section]: [...(prev[section] as any[] || []), { ...item, id: Math.random().toString(36).substring(2, 9) }]
     }));
   };
 
-  const updateListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, id: string, field: string, value: any) => {
+  const updateListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, id: string, field: string, value: any) => {
     setData(prev => ({
       ...prev,
-      [section]: (prev[section] as any[]).map(item => 
+      [section]: (prev[section] as any[] || []).map(item => 
         item.id === id ? { ...item, [field]: value } : item
       )
     }));
   };
 
-  const removeListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references'>, id: string) => {
+  const removeListItem = (section: keyof Pick<ResumeData, 'experience' | 'education' | 'skills' | 'projects' | 'languages' | 'certifications' | 'references' | 'customSections'>, id: string) => {
     setData(prev => ({
       ...prev,
-      [section]: (prev[section] as any[]).filter(item => item.id !== id)
+      [section]: (prev[section] as any[] || []).filter(item => item.id !== id)
+    }));
+  };
+
+  const addCustomSectionItem = (sectionId: string, item: any) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(sec => 
+        sec.id === sectionId ? { ...sec, items: [...(sec.items || []), { ...item, id: Math.random().toString(36).substring(2, 9) }] } : sec
+      )
+    }));
+  };
+
+  const updateCustomSectionItem = (sectionId: string, itemId: string, field: string, value: any) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(sec => 
+        sec.id === sectionId ? {
+          ...sec,
+          items: sec.items.map(item => item.id === itemId ? { ...item, [field]: value } : item)
+        } : sec
+      )
+    }));
+  };
+
+  const removeCustomSectionItem = (sectionId: string, itemId: string) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(sec => 
+        sec.id === sectionId ? {
+          ...sec,
+          items: sec.items.filter(item => item.id !== itemId)
+        } : sec
+      )
     }));
   };
 
@@ -206,7 +242,10 @@ export function ResumeProvider({ children }: { children: ReactNode }) {
       updateSettings,
       addListItem,
       updateListItem,
-      removeListItem
+      removeListItem,
+      addCustomSectionItem,
+      updateCustomSectionItem,
+      removeCustomSectionItem
     }}>
       {children}
     </ResumeContext.Provider>

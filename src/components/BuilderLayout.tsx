@@ -32,6 +32,74 @@ export function BuilderLayout() {
     }
   ];
 
+  const [showDownloadMenu, setShowDownloadMenu] = useState(false);
+  const downloadMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close download menu on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (downloadMenuRef.current && !downloadMenuRef.current.contains(event.target as Node)) {
+        setShowDownloadMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const downloadJson = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const downloadAnchorNode = document.createElement('a');
+    downloadAnchorNode.setAttribute("href",     dataStr);
+    downloadAnchorNode.setAttribute("download", "resume_data.json");
+    document.body.appendChild(downloadAnchorNode);
+    downloadAnchorNode.click();
+    downloadAnchorNode.remove();
+    setShowDownloadMenu(false);
+  };
+
+  const downloadPng = async () => {
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
+      if (!cvElement) return;
+      
+      const canvas = await html2canvas(cvElement, { scale: 2, useCORS: true });
+      const link = document.createElement('a');
+      link.download = 'resume.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch(e) {
+      console.error(e);
+      alert('Failed to generate image.');
+    }
+    setShowDownloadMenu(false);
+  };
+  
+  const downloadDocx = async () => {
+    try {
+      const htmlToDocx = (await import('html-to-docx')).default;
+      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
+      if (!cvElement) return;
+
+      // Extract inline styles for better compatibility if needed, 
+      // but html-to-docx handles basic markup
+      const htmlString = cvElement.outerHTML;
+      const fileBuffer = await htmlToDocx(htmlString, null, {
+        table: { row: { cantSplit: true } },
+        footer: true,
+        pageNumber: true,
+      });
+
+      const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const saveAs = (await import('file-saver')).saveAs;
+      saveAs(blob, 'resume.docx');
+    } catch(e) {
+      console.error(e);
+      alert('Failed to generate DOCX.');
+    }
+    setShowDownloadMenu(false);
+  };
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-slate-100 font-sans">
       {/* Header */}
@@ -74,14 +142,46 @@ export function BuilderLayout() {
             <span className="hidden sm:inline">Settings</span>
           </button>
           
-          <div className="relative">
+          <div className="relative" ref={downloadMenuRef}>
             <button 
-              onClick={() => window.print()}
+              onClick={() => setShowDownloadMenu(!showDownloadMenu)}
               className="tour-download-btn flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg shadow-sm transition-colors"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden sm:inline">Save as PDF</span>
+              <span className="hidden sm:inline">Export As</span>
+              <ChevronDown className="w-4 h-4 ml-1" />
             </button>
+            
+            {showDownloadMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 z-50">
+                <div className="py-1">
+                  <button 
+                    onClick={() => { window.print(); setShowDownloadMenu(false); }}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    Save as PDF
+                  </button>
+                  <button 
+                    onClick={downloadPng}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    Save as PNG
+                  </button>
+                  <button 
+                    onClick={downloadDocx}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    Save as DOCX
+                  </button>
+                  <button 
+                    onClick={downloadJson}
+                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                  >
+                    Export JSON Data
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>

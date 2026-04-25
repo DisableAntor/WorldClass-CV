@@ -61,6 +61,18 @@
     overflow: visible !important;
   }
 
+  .break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
   /* Keep background colors for the CV */
   .cv-preview {
     box-shadow: none !important;

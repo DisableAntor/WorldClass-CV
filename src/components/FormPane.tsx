@@ -30,7 +30,10 @@ export function FormPane() {
     updateSummary, 
     addListItem, 
     updateListItem, 
-    removeListItem 
+    removeListItem,
+    addCustomSectionItem,
+    updateCustomSectionItem,
+    removeCustomSectionItem
   } = useResume();
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -372,6 +375,72 @@ export function FormPane() {
             </button>
           </div>
         </Accordion>
+
+        {/* Custom Sections */}
+        {(data.customSections || []).map(section => (
+          <Accordion key={section.id} title={section.title || 'Custom Section'} defaultOpen>
+            <div className="mb-4 flex items-center gap-4">
+              <div className="flex-1">
+                <Input 
+                  label="Section Title" 
+                  value={section.title} 
+                  onChange={(e) => updateListItem('customSections', section.id, 'title', e.target.value)} 
+                />
+              </div>
+              <button 
+                onClick={() => removeListItem('customSections', section.id)}
+                className="mt-6 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
+                title="Delete Section"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              {(section.items || []).map(item => (
+                <div key={item.id} className="p-4 bg-slate-50 border border-slate-200 rounded-lg relative group">
+                  <button 
+                    onClick={() => removeCustomSectionItem(section.id, item.id)}
+                    className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-md transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 mt-2">
+                    <Input label="Item Title" value={item.title} onChange={(e) => updateCustomSectionItem(section.id, item.id, 'title', e.target.value)} />
+                    <Input label="Subtitle" value={item.subtitle} onChange={(e) => updateCustomSectionItem(section.id, item.id, 'subtitle', e.target.value)} />
+                    <div className="md:col-span-2">
+                      <Input label="Date or Duration" value={item.date} onChange={(e) => updateCustomSectionItem(section.id, item.id, 'date', e.target.value)} placeholder="e.g. 2022 - Present" />
+                    </div>
+                  </div>
+                  <Textarea 
+                    label="Description" 
+                    value={item.description} 
+                    onChange={(e) => updateCustomSectionItem(section.id, item.id, 'description', e.target.value)}
+                    className="min-h-[100px]"
+                  />
+                </div>
+              ))}
+              <button 
+                onClick={() => {
+                  // addCustomSectionItem doesn't exist in useResume directly yet, wait I added it!
+                  addCustomSectionItem(section.id, { title: '', subtitle: '', description: '', date: '' })
+                }}
+                className="w-full py-3 border-2 border-dashed border-slate-300 rounded-lg text-slate-600 font-medium hover:border-slate-400 hover:text-slate-800 transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" /> Add Item
+              </button>
+            </div>
+          </Accordion>
+        ))}
+
+        <div className="p-6 pt-2">
+          <button 
+            onClick={() => addListItem('customSections', { title: 'New Custom Section', items: [] })}
+            className="w-full py-3 border-2 border-blue-200 bg-blue-50 text-blue-600 rounded-lg font-medium hover:border-blue-300 hover:bg-blue-100 transition-colors flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Add Custom Section
+          </button>
+        </div>
       </div>
     </div>
   );
