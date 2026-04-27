@@ -57,76 +57,10 @@ export function BuilderLayout() {
         setActiveTab('preview');
         await new Promise(r => setTimeout(r, 600));
       }
-
-      // Add a small delay for render stability
-      await new Promise(r => setTimeout(r, 400));
-      
-      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
-      if (!cvElement) throw new Error("Preview element not found");
-      
-      // Temporarily ensure block display instead of flex so children calculate height correctly for page breaks
-      const oldDisplay = cvElement.style.display;
-      cvElement.style.display = 'block';
-
-      // Ensure proper width for rendering
-      const rect = cvElement.getBoundingClientRect();
-      const actualWidth = cvElement.scrollWidth || rect.width;
-
-      const filename = `${data.personalInfo.firstName || 'Resume'}_CV.pdf`;
-      
-      // @ts-ignore - html2pdf has no types by default
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      const opt = {
-        margin:       10, // 10mm margin
-        filename:     filename,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: true,
-          windowWidth: actualWidth, 
-          width: actualWidth
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      const pdfBlob = await html2pdf().set(opt).from(cvElement).output('blob');
-      
-      // Restore layout
-      cvElement.style.display = oldDisplay;
-      
-      if (navigator.share && navigator.canShare) {
-        try {
-          const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Resume Export'
-            });
-            setIsExporting(null);
-            setShowDownloadMenu(false);
-            return;
-          }
-        } catch (err) {
-          console.log("Share fallback", err);
-        }
-      }
-      
-      const url = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.download = filename;
-      link.href = url;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      
+      reactToPrintFn();
     } catch(e) {
       console.error(e);
-      alert('Failed to generate PDF. ' + (e instanceof Error ? e.message : 'Please try again.'));
-    } finally {
+      alert('Failed to initialize PDF generation. ' + (e instanceof Error ? e.message : 'Please try again.'));
       setIsExporting(null);
       setShowDownloadMenu(false);
     }
@@ -143,28 +77,20 @@ export function BuilderLayout() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const downloadJson = () => {
+  const downloadJson = async () => {
     setIsExporting('json');
-    setTimeout(() => {
-      try {
-        const jsonString = JSON.stringify(data, null, 2);
-        const blob = new Blob([jsonString], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const downloadAnchorNode = document.createElement('a');
-        downloadAnchorNode.href = url;
-        downloadAnchorNode.download = `${data.personalInfo.firstName || 'Resume'}_Data.json`;
-        document.body.appendChild(downloadAnchorNode);
-        downloadAnchorNode.click();
-        document.body.removeChild(downloadAnchorNode);
-        URL.revokeObjectURL(url);
-      } catch (e) {
-        console.error(e);
-        alert('Failed to generate JSON. Please try again.');
-      } finally {
-        setShowDownloadMenu(false);
-        setIsExporting(null);
-      }
-    }, 100);
+    try {
+      const { saveAs } = await import('file-saver');
+      const jsonString = JSON.stringify(data, null, 2);
+      const blob = new Blob([jsonString], { type: "application/json" });
+      saveAs(blob, `${data.personalInfo.firstName || 'Resume'}_Data.json`);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to generate JSON. Please try again.');
+    } finally {
+      setShowDownloadMenu(false);
+      setIsExporting(null);
+    }
   };
 
   const downloadPng = async () => {
@@ -173,17 +99,22 @@ export function BuilderLayout() {
       
       if (activeTab !== 'preview') {
         setActiveTab('preview');
-        // Wait for display:block to take effect and browser to compute layout
         await new Promise(r => setTimeout(r, 600));
       }
 
-      const html2canvas = (await import('html2canvas')).default;
+      // Add a small delay for render stability
+      await new Promise(r => setTimeout(r, 400));
+      
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
       if (!cvElement) throw new Error("Preview element not found");
       
-      // Delay slightly for render stability
-      await new Promise(r => setTimeout(r, 300));
-      
+      // Temporarily ensure block display instead of flex so children calculate height correctly
+      const oldDisplay = cvElement.style.display;
+      cvElement.style.display = 'block';
+
+      const html2canvas = (await import('html2canvas')).default;
+      const { saveAs } = await import('file-saver');
+
       const canvas = await html2canvas(cvElement, { 
         scale: 2, 
         useCORS: true,
@@ -191,36 +122,19 @@ export function BuilderLayout() {
         backgroundColor: '#ffffff'
       });
       
+      cvElement.style.display = oldDisplay;
+      
       const filename = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
       
       canvas.toBlob(async (blob) => {
         if (!blob) throw new Error("Could not create image blob");
         
-        if (navigator.share && navigator.canShare) {
-          try {
-            const file = new File([blob], filename, { type: 'image/png' });
-            if (navigator.canShare({ files: [file] })) {
-              await navigator.share({
-                files: [file],
-                title: 'Resume Export'
-              });
-              setIsExporting(null);
-              setShowDownloadMenu(false);
-              return;
-            }
-          } catch (err) {
-            console.log("Share fallback", err);
-          }
+        try {
+          // Fallback to FileSaver which reliably handles mobile quirks
+          saveAs(blob, filename);
+        } catch(err) {
+            console.error("Save error", err);
         }
-        
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
         
         setIsExporting(null);
         setShowDownloadMenu(false);
@@ -244,6 +158,7 @@ export function BuilderLayout() {
       }
 
       const htmlToDocx = (await import('html-to-docx')).default;
+      const { saveAs } = await import('file-saver');
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
       if (!cvElement) throw new Error("Preview element not found");
 
@@ -255,14 +170,8 @@ export function BuilderLayout() {
       });
 
       const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const url = URL.createObjectURL(blob);
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.href = url;
-      downloadAnchorNode.download = `${data.personalInfo.firstName || 'Resume'}_CV.docx`;
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      document.body.removeChild(downloadAnchorNode);
-      URL.revokeObjectURL(url);
+      saveAs(blob, `${data.personalInfo.firstName || 'Resume'}_CV.docx`);
+      
     } catch(e) {
       console.error(e);
       alert('Failed to generate DOCX. Please try again.');
