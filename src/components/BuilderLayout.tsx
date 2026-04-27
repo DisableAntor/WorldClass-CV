@@ -41,7 +41,7 @@ export function BuilderLayout() {
   const reactToPrintFn = useReactToPrint({
     contentRef: contentToPrintRef,
     documentTitle: `${data.personalInfo.firstName || 'Resume'}_CV`,
-    onBeforeGetContent: () => {
+    onBeforePrint: () => {
       return new Promise<void>((resolve) => setTimeout(resolve, 100)); // give state time to update if needed
     },
     onAfterPrint: () => {
@@ -73,15 +73,24 @@ export function BuilderLayout() {
   const downloadJson = () => {
     setIsExporting('json');
     setTimeout(() => {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-      const downloadAnchorNode = document.createElement('a');
-      downloadAnchorNode.setAttribute("href",     dataStr);
-      downloadAnchorNode.setAttribute("download", `${data.personalInfo.firstName || 'Resume'}_Data.json`);
-      document.body.appendChild(downloadAnchorNode);
-      downloadAnchorNode.click();
-      downloadAnchorNode.remove();
-      setShowDownloadMenu(false);
-      setIsExporting(null);
+      try {
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const downloadAnchorNode = document.createElement('a');
+        downloadAnchorNode.href = url;
+        downloadAnchorNode.download = `${data.personalInfo.firstName || 'Resume'}_Data.json`;
+        document.body.appendChild(downloadAnchorNode);
+        downloadAnchorNode.click();
+        document.body.removeChild(downloadAnchorNode);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error(e);
+        alert('Failed to generate JSON. Please try again.');
+      } finally {
+        setShowDownloadMenu(false);
+        setIsExporting(null);
+      }
     }, 100);
   };
 
@@ -103,8 +112,8 @@ export function BuilderLayout() {
       
       // Get precise dimensions to prevent cutoff on mobile
       const rect = cvElement.getBoundingClientRect();
-      const rectWidth = cvElement.offsetWidth;
-      const rectHeight = cvElement.offsetHeight;
+      const rectWidth = cvElement.scrollWidth || rect.width;
+      const rectHeight = cvElement.scrollHeight || rect.height;
       
       const canvas = await html2canvas(cvElement, { 
         scale: 2, 
@@ -116,7 +125,7 @@ export function BuilderLayout() {
         x: 0,
         y: 0,
         scrollX: 0,
-        scrollY: -window.scrollY
+        scrollY: 0
       });
       const link = document.createElement('a');
       link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
@@ -152,8 +161,14 @@ export function BuilderLayout() {
       });
 
       const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const saveAs = (await import('file-saver')).saveAs;
-      saveAs(blob, `${data.personalInfo.firstName || 'Resume'}_CV.docx`);
+      const url = URL.createObjectURL(blob);
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.href = url;
+      downloadAnchorNode.download = `${data.personalInfo.firstName || 'Resume'}_CV.docx`;
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      document.body.removeChild(downloadAnchorNode);
+      URL.revokeObjectURL(url);
     } catch(e) {
       console.error(e);
       alert('Failed to generate DOCX. Please try again.');
@@ -527,7 +542,6 @@ export function BuilderLayout() {
         steps={tutorialSteps}
         run={runTutorial}
         continuous={true}
-        showProgress={true}
         showSkipButton={true}
         callback={(data) => {
           if (data.status === 'finished' || data.status === 'skipped') {
