@@ -59,69 +59,11 @@ export function BuilderLayout() {
       }
 
       await new Promise(r => setTimeout(r, 400));
-      
-      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
-      if (!cvElement) throw new Error("Preview element not found");
-
-      // Temporarily explicitly set a fixed pixel width so mobile doesn't squish elements
-      // A4 width in px at 96 DPI is ~794px. We will force 794px
-      const originalCssText = cvElement.style.cssText;
-      let actualWidth = 794; 
-      
-      // Force dimensions for a perfect A4 ratio render
-      cvElement.style.width = '794px';
-      cvElement.style.maxWidth = '794px';
-      cvElement.style.minWidth = '794px';
-      cvElement.style.margin = '0';
-      cvElement.style.transform = 'none';
-
-      const filename = `${data.personalInfo.firstName || 'Resume'}_CV.pdf`;
-      const html2pdf = (await import('html2pdf.js')).default;
-      
-      const opt = {
-        margin:       10, // 10mm margin
-        filename:     filename,
-        image:        { type: 'jpeg', quality: 1.0 },
-        html2canvas:  { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: true,
-          windowWidth: actualWidth, 
-          width: actualWidth
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
-      };
-
-      const pdfBlob = await html2pdf().set(opt).from(cvElement).output('blob');
-      
-      // Restore layout
-      cvElement.style.cssText = originalCssText;
-      
-      if (navigator.share && navigator.canShare) {
-        try {
-          const file = new File([pdfBlob], filename, { type: 'application/pdf' });
-          if (navigator.canShare({ files: [file] })) {
-            await navigator.share({
-              files: [file],
-              title: 'Resume Export'
-            });
-            setIsExporting(null);
-            setShowDownloadMenu(false);
-            return;
-          }
-        } catch (err) {
-          console.log("Share fallback", err);
-        }
-      }
-      
-      const { saveAs } = await import('file-saver');
-      saveAs(pdfBlob, filename);
+      reactToPrintFn();
       
     } catch(e) {
       console.error(e);
-      alert('Failed to generate PDF. ' + (e instanceof Error ? e.message : 'Please try again.'));
-    } finally {
+      alert('Failed to initialize PDF. ' + (e instanceof Error ? e.message : 'Please try again.'));
       setIsExporting(null);
       setShowDownloadMenu(false);
     }
@@ -179,35 +121,34 @@ export function BuilderLayout() {
       cvElement.style.margin = '0';
       cvElement.style.transform = 'none';
 
-      const html2canvas = (await import('html2canvas')).default;
+      const domtoimage = (await import('dom-to-image-more')).default;
       const { saveAs } = await import('file-saver');
 
-      const canvas = await html2canvas(cvElement, { 
-        scale: 2, 
-        useCORS: true,
-        allowTaint: true,
-        windowWidth: actualWidth,
+      const blob = await domtoimage.toBlob(cvElement, {
+        bgcolor: '#ffffff',
         width: actualWidth,
-        backgroundColor: '#ffffff'
+        height: cvElement.scrollHeight || actualWidth * 1.414,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left'
+        }
       });
       
       cvElement.style.cssText = originalCssText;
       
       const filename = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
       
-      canvas.toBlob(async (blob) => {
-        if (!blob) throw new Error("Could not create image blob");
-        
-        try {
-          // Fallback to FileSaver which reliably handles mobile quirks
-          saveAs(blob, filename);
-        } catch(err) {
-            console.error("Save error", err);
-        }
-        
-        setIsExporting(null);
-        setShowDownloadMenu(false);
-      }, 'image/png');
+      if (!blob) throw new Error("Could not create image blob");
+      
+      try {
+        // Fallback to FileSaver which reliably handles mobile quirks
+        saveAs(blob, filename);
+      } catch(err) {
+          console.error("Save error", err);
+      }
+      
+      setIsExporting(null);
+      setShowDownloadMenu(false);
 
     } catch(e) {
       console.error(e);

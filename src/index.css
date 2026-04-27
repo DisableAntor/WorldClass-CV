@@ -42,13 +42,12 @@
   }
   
   /* Selectively target only the app layout wraps to reset their overflow and positioning */
-  body * {
+  html, body {
     overflow: visible !important;
   }
-  #root > .h-screen, .tour-preview-pane, .flex, .flex-col, .h-screen, .h-full, .overflow-hidden, .overflow-y-auto, .overflow-auto {
+  #root > .h-screen, .tour-preview-pane, .h-screen, .h-full, .overflow-y-auto, .overflow-auto {
     height: auto !important;
     overflow: visible !important;
-    display: block !important;
   }
   main.overflow-hidden {
     overflow: visible !important;
@@ -56,7 +55,6 @@
   }
   main .absolute.inset-0 {
     position: static !important;
-    display: block !important;
   }
 
   .break-inside-avoid {
@@ -72,8 +70,7 @@
   }
 
   /* Keep background colors for the CV */
-  .cv-preview, .cv-preview > div {
-    display: block !important;
+  .cv-preview {
     box-shadow: none !important;
     margin: 0 !important;
     padding: 0 !important;
