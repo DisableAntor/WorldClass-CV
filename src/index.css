@@ -20,10 +20,7 @@
 /* Print specific styles to ensure background colors and formatting remain on the exported PDF */
 @media print {
   @page {
-    margin-top: 1cm;
-    margin-bottom: 1cm;
-    margin-left: 0;
-    margin-right: 0;
+    margin: 1.5cm;
     size: A4 portrait;
   }
   
@@ -78,11 +75,11 @@
   }
 
   /* Keep background colors for the CV */
-  .cv-preview {
+  .cv-preview, .cv-preview > div {
     box-shadow: none !important;
     margin: 0 !important;
     padding: 0 !important;
     width: auto !important;
-    min-height: 27.7cm !important; /* A4 height (29.7cm) minus 1cm top and 1cm bottom margin */
+    min-height: auto !important;
   }
 }

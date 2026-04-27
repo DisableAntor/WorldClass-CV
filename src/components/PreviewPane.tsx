@@ -1060,16 +1060,16 @@ export function BdStandardTemplate({ data }: { data: any }) {
         </div>
       )}
 
-      <div className="mt-8 break-inside-avoid">
+      <div className="mt-8 break-inside-avoid pb-4">
         <h3 className="text-base font-bold uppercase underline mb-2 bg-slate-100/50 p-1 pl-2">{settings.sectionTitles?.declaration || 'Declaration'}</h3>
-        <p className="text-justify px-2 mb-12">I do hereby declare that all the information given above is true and correct to the best of my knowledge and belief.</p>
-        <div className="flex justify-between items-end px-2 mt-12">
+        <p className="text-justify px-2 mb-8">I do hereby declare that all the information given above is true and correct to the best of my knowledge and belief.</p>
+        <div className="flex justify-between items-end px-2 mt-8">
           <div>
             <p className="font-bold">Date: <span className="font-normal">{today}</span></p>
           </div>
           <div className="text-center">
             <p className="border-t border-black px-8 pt-1 italic">{personalInfo.firstName} {personalInfo.lastName}</p>
-            <p className="text-sm font-bold">Signature</p>
+            <p className="text-sm font-bold mt-1">Signature</p>
           </div>
         </div>
       </div>

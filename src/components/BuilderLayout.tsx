@@ -100,40 +100,33 @@ export function BuilderLayout() {
       
       if (activeTab !== 'preview') {
         setActiveTab('preview');
-        await new Promise(r => setTimeout(r, 500));
+        // Wait for display:block to take effect and browser to compute layout
+        await new Promise(r => setTimeout(r, 600));
       }
 
       const html2canvas = (await import('html2canvas')).default;
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
       if (!cvElement) throw new Error("Preview element not found");
       
-      // Delay slightly for render
-      await new Promise(r => setTimeout(r, 200));
-      
-      // Get precise dimensions to prevent cutoff on mobile
-      const rect = cvElement.getBoundingClientRect();
-      const rectWidth = cvElement.scrollWidth || rect.width;
-      const rectHeight = cvElement.scrollHeight || rect.height;
+      // Delay slightly for render stability
+      await new Promise(r => setTimeout(r, 300));
       
       const canvas = await html2canvas(cvElement, { 
         scale: 2, 
         useCORS: true,
-        backgroundColor: '#ffffff',
-        width: rectWidth,
-        height: rectHeight,
-        windowWidth: rectWidth + 200,
-        x: 0,
-        y: 0,
-        scrollX: 0,
-        scrollY: 0
+        backgroundColor: '#ffffff'
       });
+      
+      const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
       link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
-      link.href = canvas.toDataURL('image/png');
+      link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      document.body.removeChild(link);
     } catch(e) {
       console.error(e);
-      alert('Failed to generate image. Please try again.');
+      alert('Failed to generate image. ' + (e instanceof Error ? e.message : 'Please try again.'));
     } finally {
       setIsExporting(null);
       setShowDownloadMenu(false);
