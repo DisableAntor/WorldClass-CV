@@ -57,10 +57,71 @@ export function BuilderLayout() {
         setActiveTab('preview');
         await new Promise(r => setTimeout(r, 600));
       }
-      reactToPrintFn();
+
+      await new Promise(r => setTimeout(r, 400));
+      
+      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
+      if (!cvElement) throw new Error("Preview element not found");
+
+      // Temporarily explicitly set a fixed pixel width so mobile doesn't squish elements
+      // A4 width in px at 96 DPI is ~794px. We will force 794px
+      const originalCssText = cvElement.style.cssText;
+      let actualWidth = 794; 
+      
+      // Force dimensions for a perfect A4 ratio render
+      cvElement.style.width = '794px';
+      cvElement.style.maxWidth = '794px';
+      cvElement.style.minWidth = '794px';
+      cvElement.style.margin = '0';
+      cvElement.style.transform = 'none';
+
+      const filename = `${data.personalInfo.firstName || 'Resume'}_CV.pdf`;
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const opt = {
+        margin:       10, // 10mm margin
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 1.0 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          allowTaint: true,
+          windowWidth: actualWidth, 
+          width: actualWidth
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      const pdfBlob = await html2pdf().set(opt).from(cvElement).output('blob');
+      
+      // Restore layout
+      cvElement.style.cssText = originalCssText;
+      
+      if (navigator.share && navigator.canShare) {
+        try {
+          const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Resume Export'
+            });
+            setIsExporting(null);
+            setShowDownloadMenu(false);
+            return;
+          }
+        } catch (err) {
+          console.log("Share fallback", err);
+        }
+      }
+      
+      const { saveAs } = await import('file-saver');
+      saveAs(pdfBlob, filename);
+      
     } catch(e) {
       console.error(e);
-      alert('Failed to initialize PDF generation. ' + (e instanceof Error ? e.message : 'Please try again.'));
+      alert('Failed to generate PDF. ' + (e instanceof Error ? e.message : 'Please try again.'));
+    } finally {
       setIsExporting(null);
       setShowDownloadMenu(false);
     }
@@ -108,9 +169,15 @@ export function BuilderLayout() {
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
       if (!cvElement) throw new Error("Preview element not found");
       
-      // Temporarily ensure block display instead of flex so children calculate height correctly
-      const oldDisplay = cvElement.style.display;
-      cvElement.style.display = 'block';
+      const originalCssText = cvElement.style.cssText;
+      let actualWidth = 794; 
+      
+      // Force dimensions for a perfect A4 ratio render
+      cvElement.style.width = '794px';
+      cvElement.style.maxWidth = '794px';
+      cvElement.style.minWidth = '794px';
+      cvElement.style.margin = '0';
+      cvElement.style.transform = 'none';
 
       const html2canvas = (await import('html2canvas')).default;
       const { saveAs } = await import('file-saver');
@@ -119,10 +186,12 @@ export function BuilderLayout() {
         scale: 2, 
         useCORS: true,
         allowTaint: true,
+        windowWidth: actualWidth,
+        width: actualWidth,
         backgroundColor: '#ffffff'
       });
       
-      cvElement.style.display = oldDisplay;
+      cvElement.style.cssText = originalCssText;
       
       const filename = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
       

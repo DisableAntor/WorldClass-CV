@@ -39,7 +39,7 @@ function CustomSectionsRenderer({ data, titleClass, subtitleClass, dividerClass,
                     {item.date && <span className="text-sm font-semibold opacity-80 shrink-0">{item.date}</span>}
                   </div>
                   {item.subtitle && <div className={subtitleClass || "text-sm font-bold opacity-80 mb-2"} style={headerColor ? { color: headerColor } : {}}>{item.subtitle}</div>}
-                  {item.description && <div className="text-sm space-y-1 opacity-90 text-slate-700" dangerouslySetInnerHTML={{ __html: item.description.replace(/\n/g, '<br/>') }} />}
+                  {item.description && <div className="text-sm space-y-1 opacity-90 text-slate-700" dangerouslySetInnerHTML={{ __html: item.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />}
                 </div>
               ))}
             </div>
@@ -299,7 +299,7 @@ function ModernTemplate({ data }: { data: any }) {
                     </span>
                   </div>
                   <p className="text-sm font-medium mb-2" style={{ color: settings.themeColor }}>{exp.employer}</p>
-                  <div className="text-sm text-slate-600 space-y-1 pl-4" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                  <div className="text-sm text-slate-600 space-y-1 pl-4" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                 </div>
               ))}
             </div>
@@ -348,7 +348,7 @@ function ModernTemplate({ data }: { data: any }) {
                     <p className="text-sm font-medium" style={{ color: settings.themeColor }}>{proj.subtitle}</p>
                     {proj.link && <a href={proj.link.startsWith('http') ? proj.link : `https://${proj.link}`} target="_blank" rel="noreferrer" className="text-xs text-blue-600 break-all ml-2">{proj.link}</a>}
                   </div>
-                  <div className="text-sm text-slate-600 space-y-1 pl-4" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                  <div className="text-sm text-slate-600 space-y-1 pl-4" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                 </div>
               ))}
             </div>
@@ -421,7 +421,7 @@ function ClassicTemplate({ data }: { data: any }) {
                 <div className="flex justify-between items-baseline mb-2">
                   <p className="text-sm font-medium italic text-slate-700">{exp.employer}</p>
                 </div>
-                <div className="text-sm text-slate-700 ml-4 list-disc space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                <div className="text-sm text-slate-700 ml-4 list-disc space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
               </div>
             ))}
           </div>
@@ -461,7 +461,7 @@ function ClassicTemplate({ data }: { data: any }) {
                   </span>
                 </div>
                 {proj.link && <p className="text-sm text-blue-600 mb-1">{proj.link}</p>}
-                <div className="text-sm text-slate-700 ml-4 list-disc space-y-1 mt-1" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                <div className="text-sm text-slate-700 ml-4 list-disc space-y-1 mt-1" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
               </div>
             ))}
           </div>
@@ -563,7 +563,7 @@ function MinimalTemplate({ data }: { data: any }) {
                       </span>
                     </div>
                     <p className="text-sm font-medium mb-3" style={{ color: settings.themeColor }}>{exp.employer}</p>
-                    <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   </div>
                 ))}
               </div>
@@ -603,7 +603,7 @@ function MinimalTemplate({ data }: { data: any }) {
                       </span>
                     </div>
                     <p className="text-sm font-medium mb-3" style={{ color: settings.themeColor }}>{proj.subtitle} {proj.link && <span className="text-slate-400 ml-2 font-normal">({proj.link})</span>}</p>
-                    <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   </div>
                 ))}
               </div>
@@ -673,7 +673,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
                       </span>
                     </div>
                     <p className="text-sm font-bold mb-3 uppercase tracking-wider" style={{ color: settings.themeColor }}>{exp.employer}</p>
-                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   </div>
                 ))}
               </div>
@@ -698,7 +698,7 @@ function ExecutiveTemplate({ data }: { data: any }) {
                     <div className="flex items-center gap-2 mb-2 text-sm font-bold uppercase tracking-wider" style={{ color: settings.themeColor }}>
                       {proj.subtitle} {proj.link && <a href={proj.link} className="lowercase font-normal ml-2">({proj.link})</a>}
                     </div>
-                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   </div>
                 ))}
               </div>
@@ -819,7 +819,7 @@ function CreativeTemplate({ data }: { data: any }) {
                         {formatDate(exp.startDate)} - {exp.isCurrent ? 'Present' : formatDate(exp.endDate)}
                       </span>
                     </div>
-                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-sm text-slate-600 space-y-1" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   </div>
                 ))}
               </div>
@@ -834,7 +834,7 @@ function CreativeTemplate({ data }: { data: any }) {
                   <div key={proj.id} className="break-inside-avoid bg-slate-50 p-5 rounded-2xl border border-slate-100">
                     <h3 className="font-bold text-lg mb-1">{proj.title}</h3>
                     <p className="text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">{proj.subtitle}</p>
-                    <div className="text-xs text-slate-600 space-y-1 mb-2" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                    <div className="text-xs text-slate-600 space-y-1 mb-2" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                     {proj.link && <p className="text-xs font-bold break-all" style={{ color: settings.themeColor }}>{proj.link}</p>}
                   </div>
                 ))}
@@ -935,7 +935,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
                   <p><strong>Organization:</strong> {exp.employer}</p>
                   <p><strong>Duration:</strong> {formatDate(exp.startDate)} to {exp.isCurrent ? 'Present' : formatDate(exp.endDate)}</p>
                   {exp.description && (
-                    <div className="mt-1 text-[14px]" dangerouslySetInnerHTML={{ __html: exp.description.replace(/\n/g, '<br/>') }} />
+                    <div className="mt-1 text-[14px]" dangerouslySetInnerHTML={{ __html: exp.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   )}
                 </div>
               </div>
@@ -1013,7 +1013,7 @@ export function BdStandardTemplate({ data }: { data: any }) {
                 <div className="pl-4">
                   <p><strong>Role:</strong> {proj.subtitle}</p>
                   {proj.description && (
-                    <div className="mt-1 text-[14px]" dangerouslySetInnerHTML={{ __html: proj.description.replace(/\n/g, '<br/>') }} />
+                    <div className="mt-1 text-[14px]" dangerouslySetInnerHTML={{ __html: proj.description.replace(/(?:\\r\\n|\\r|\\n|\\\\n)/g, '<br/>') }} />
                   )}
                   {proj.link && <p className="mt-1 break-all"><strong>Link:</strong> {proj.link}</p>}
                 </div>
