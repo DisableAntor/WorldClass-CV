@@ -51,12 +51,85 @@ export function BuilderLayout() {
   });
 
   const handlePdfExport = async () => {
-    setIsExporting('pdf');
-    if (activeTab !== 'preview') {
-      setActiveTab('preview');
-      await new Promise(r => setTimeout(r, 500));
+    try {
+      setIsExporting('pdf');
+      if (activeTab !== 'preview') {
+        setActiveTab('preview');
+        await new Promise(r => setTimeout(r, 600));
+      }
+
+      // Add a small delay for render stability
+      await new Promise(r => setTimeout(r, 400));
+      
+      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
+      if (!cvElement) throw new Error("Preview element not found");
+      
+      // Temporarily ensure block display instead of flex so children calculate height correctly for page breaks
+      const oldDisplay = cvElement.style.display;
+      cvElement.style.display = 'block';
+
+      // Ensure proper width for rendering
+      const rect = cvElement.getBoundingClientRect();
+      const actualWidth = cvElement.scrollWidth || rect.width;
+
+      const filename = `${data.personalInfo.firstName || 'Resume'}_CV.pdf`;
+      
+      // @ts-ignore - html2pdf has no types by default
+      const html2pdf = (await import('html2pdf.js')).default;
+      
+      const opt = {
+        margin:       10, // 10mm margin
+        filename:     filename,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+          scale: 2, 
+          useCORS: true, 
+          allowTaint: true,
+          windowWidth: actualWidth, 
+          width: actualWidth
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      const pdfBlob = await html2pdf().set(opt).from(cvElement).output('blob');
+      
+      // Restore layout
+      cvElement.style.display = oldDisplay;
+      
+      if (navigator.share && navigator.canShare) {
+        try {
+          const file = new File([pdfBlob], filename, { type: 'application/pdf' });
+          if (navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              files: [file],
+              title: 'Resume Export'
+            });
+            setIsExporting(null);
+            setShowDownloadMenu(false);
+            return;
+          }
+        } catch (err) {
+          console.log("Share fallback", err);
+        }
+      }
+      
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.download = filename;
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch(e) {
+      console.error(e);
+      alert('Failed to generate PDF. ' + (e instanceof Error ? e.message : 'Please try again.'));
+    } finally {
+      setIsExporting(null);
+      setShowDownloadMenu(false);
     }
-    reactToPrintFn();
   };
 
   // Close download menu on click outside
