@@ -114,20 +114,48 @@ export function BuilderLayout() {
       const canvas = await html2canvas(cvElement, { 
         scale: 2, 
         useCORS: true,
+        allowTaint: true,
         backgroundColor: '#ffffff'
       });
       
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
-      link.href = dataUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const filename = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
+      
+      canvas.toBlob(async (blob) => {
+        if (!blob) throw new Error("Could not create image blob");
+        
+        if (navigator.share && navigator.canShare) {
+          try {
+            const file = new File([blob], filename, { type: 'image/png' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({
+                files: [file],
+                title: 'Resume Export'
+              });
+              setIsExporting(null);
+              setShowDownloadMenu(false);
+              return;
+            }
+          } catch (err) {
+            console.log("Share fallback", err);
+          }
+        }
+        
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.download = filename;
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        setIsExporting(null);
+        setShowDownloadMenu(false);
+      }, 'image/png');
+
     } catch(e) {
       console.error(e);
       alert('Failed to generate image. ' + (e instanceof Error ? e.message : 'Please try again.'));
-    } finally {
       setIsExporting(null);
       setShowDownloadMenu(false);
     }
