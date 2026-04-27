@@ -42,7 +42,6 @@ export function BuilderLayout() {
     contentRef: contentToPrintRef,
     documentTitle: `${data.personalInfo.firstName || 'Resume'}_CV`,
     onBeforeGetContent: () => {
-      setIsExporting('pdf');
       return new Promise<void>((resolve) => setTimeout(resolve, 100)); // give state time to update if needed
     },
     onAfterPrint: () => {
@@ -50,6 +49,15 @@ export function BuilderLayout() {
       setShowDownloadMenu(false);
     }
   });
+
+  const handlePdfExport = async () => {
+    setIsExporting('pdf');
+    if (activeTab !== 'preview') {
+      setActiveTab('preview');
+      await new Promise(r => setTimeout(r, 500));
+    }
+    reactToPrintFn();
+  };
 
   // Close download menu on click outside
   useEffect(() => {
@@ -80,17 +88,35 @@ export function BuilderLayout() {
   const downloadPng = async () => {
     try {
       setIsExporting('png');
+      
+      if (activeTab !== 'preview') {
+        setActiveTab('preview');
+        await new Promise(r => setTimeout(r, 500));
+      }
+
       const html2canvas = (await import('html2canvas')).default;
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
-      if (!cvElement) return;
+      if (!cvElement) throw new Error("Preview element not found");
       
       // Delay slightly for render
       await new Promise(r => setTimeout(r, 200));
       
+      // Get precise dimensions to prevent cutoff on mobile
+      const rect = cvElement.getBoundingClientRect();
+      const rectWidth = cvElement.offsetWidth;
+      const rectHeight = cvElement.offsetHeight;
+      
       const canvas = await html2canvas(cvElement, { 
         scale: 2, 
         useCORS: true,
-        backgroundColor: '#ffffff' 
+        backgroundColor: '#ffffff',
+        width: rectWidth,
+        height: rectHeight,
+        windowWidth: rectWidth + 200,
+        x: 0,
+        y: 0,
+        scrollX: 0,
+        scrollY: -window.scrollY
       });
       const link = document.createElement('a');
       link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
@@ -99,6 +125,38 @@ export function BuilderLayout() {
     } catch(e) {
       console.error(e);
       alert('Failed to generate image. Please try again.');
+    } finally {
+      setIsExporting(null);
+      setShowDownloadMenu(false);
+    }
+  };
+
+  const downloadDocx = async () => {
+    try {
+      setIsExporting('docx');
+      
+      if (activeTab !== 'preview') {
+        setActiveTab('preview');
+        await new Promise(r => setTimeout(r, 500));
+      }
+
+      const htmlToDocx = (await import('html-to-docx')).default;
+      const cvElement = document.querySelector('.cv-preview') as HTMLElement;
+      if (!cvElement) throw new Error("Preview element not found");
+
+      const htmlString = cvElement.outerHTML;
+      const fileBuffer = await htmlToDocx(htmlString, null, {
+        table: { row: { cantSplit: true } },
+        footer: true,
+        pageNumber: true,
+      });
+
+      const blob = new Blob([fileBuffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+      const saveAs = (await import('file-saver')).saveAs;
+      saveAs(blob, `${data.personalInfo.firstName || 'Resume'}_CV.docx`);
+    } catch(e) {
+      console.error(e);
+      alert('Failed to generate DOCX. Please try again.');
     } finally {
       setIsExporting(null);
       setShowDownloadMenu(false);
@@ -161,7 +219,7 @@ export function BuilderLayout() {
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 z-50 overflow-hidden">
                 <div className="py-1">
                   <button 
-                    onClick={() => { reactToPrintFn(); }}
+                    onClick={handlePdfExport}
                     disabled={!!isExporting}
                     className="flex w-full items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors disabled:opacity-50"
                   >
@@ -175,6 +233,14 @@ export function BuilderLayout() {
                   >
                     {isExporting === 'png' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2 text-blue-500" />}
                     Save as PNG
+                  </button>
+                  <button 
+                    onClick={downloadDocx}
+                    disabled={!!isExporting}
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors disabled:opacity-50 border-t border-slate-100 mt-1"
+                  >
+                    {isExporting === 'docx' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2 text-indigo-500" />}
+                    Save as DOCX
                   </button>
                   <button 
                     onClick={downloadJson}
@@ -447,8 +513,8 @@ export function BuilderLayout() {
           </div>
 
           {/* Preview Pane */}
-          <div className={`tour-preview-pane w-full md:w-[55%] lg:w-[60%] bg-slate-400/20 h-full overflow-y-auto p-4 md:p-8 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
-            <div className="max-w-4xl mx-auto flex justify-center">
+          <div className={`tour-preview-pane w-full md:w-[55%] lg:w-[60%] bg-slate-400/20 h-full overflow-auto p-4 md:p-8 ${activeTab === 'preview' ? 'block' : 'hidden md:block'}`}>
+            <div className="max-w-4xl mx-auto flex justify-center min-w-[21cm]">
               <div ref={contentToPrintRef}>
                 <PreviewPane />
               </div>
