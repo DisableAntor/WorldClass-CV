@@ -21,12 +21,13 @@
 @media print {
   @page {
     margin: 0;
-    size: auto;
+    size: A4 portrait;
   }
   
   html, body, #root {
     height: auto !important;
     min-height: auto !important;
+    width: 100% !important;
     overflow: visible !important;
     background-color: white !important;
     -webkit-print-color-adjust: exact !important;

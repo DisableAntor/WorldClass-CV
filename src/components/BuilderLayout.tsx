@@ -12,6 +12,7 @@ export function BuilderLayout() {
   const [showSettings, setShowSettings] = useState(false);
   const [showTemplateModal, setShowTemplateModal] = useState(false);
   const [runTutorial, setRunTutorial] = useState(false);
+  const [isExporting, setIsExporting] = useState<string | null>(null);
   const { updateSettings, data } = useResume();
 
   const tutorialSteps: Step[] = [
@@ -39,7 +40,15 @@ export function BuilderLayout() {
 
   const reactToPrintFn = useReactToPrint({
     contentRef: contentToPrintRef,
-    documentTitle: 'Resume',
+    documentTitle: `${data.personalInfo.firstName || 'Resume'}_CV`,
+    onBeforeGetContent: () => {
+      setIsExporting('pdf');
+      return new Promise<void>((resolve) => setTimeout(resolve, 100)); // give state time to update if needed
+    },
+    onAfterPrint: () => {
+      setIsExporting(null);
+      setShowDownloadMenu(false);
+    }
   });
 
   // Close download menu on click outside
@@ -54,32 +63,46 @@ export function BuilderLayout() {
   }, []);
 
   const downloadJson = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
-    const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", "resume_data.json");
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
-    setShowDownloadMenu(false);
+    setIsExporting('json');
+    setTimeout(() => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const downloadAnchorNode = document.createElement('a');
+      downloadAnchorNode.setAttribute("href",     dataStr);
+      downloadAnchorNode.setAttribute("download", `${data.personalInfo.firstName || 'Resume'}_Data.json`);
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      setShowDownloadMenu(false);
+      setIsExporting(null);
+    }, 100);
   };
 
   const downloadPng = async () => {
     try {
+      setIsExporting('png');
       const html2canvas = (await import('html2canvas')).default;
       const cvElement = document.querySelector('.cv-preview') as HTMLElement;
       if (!cvElement) return;
       
-      const canvas = await html2canvas(cvElement, { scale: 2, useCORS: true });
+      // Delay slightly for render
+      await new Promise(r => setTimeout(r, 200));
+      
+      const canvas = await html2canvas(cvElement, { 
+        scale: 2, 
+        useCORS: true,
+        backgroundColor: '#ffffff' 
+      });
       const link = document.createElement('a');
-      link.download = 'resume.png';
+      link.download = `${data.personalInfo.firstName || 'Resume'}_CV.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
     } catch(e) {
       console.error(e);
-      alert('Failed to generate image.');
+      alert('Failed to generate image. Please try again.');
+    } finally {
+      setIsExporting(null);
+      setShowDownloadMenu(false);
     }
-    setShowDownloadMenu(false);
   };
   
   return (
@@ -135,24 +158,30 @@ export function BuilderLayout() {
             </button>
             
             {showDownloadMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 z-50">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 z-50 overflow-hidden">
                 <div className="py-1">
                   <button 
-                    onClick={() => { reactToPrintFn(); setShowDownloadMenu(false); }}
-                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                    onClick={() => { reactToPrintFn(); }}
+                    disabled={!!isExporting}
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors disabled:opacity-50"
                   >
+                    {isExporting === 'pdf' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <FileText className="w-4 h-4 mr-2 text-red-500" />}
                     Save as PDF
                   </button>
                   <button 
                     onClick={downloadPng}
-                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                    disabled={!!isExporting}
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors disabled:opacity-50"
                   >
+                    {isExporting === 'png' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <ImageIcon className="w-4 h-4 mr-2 text-blue-500" />}
                     Save as PNG
                   </button>
                   <button 
                     onClick={downloadJson}
-                    className="flex w-full items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+                    disabled={!!isExporting}
+                    className="flex w-full items-center px-4 py-2.5 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900 transition-colors disabled:opacity-50 border-t border-slate-100 mt-1"
                   >
+                    {isExporting === 'json' ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <LayoutTemplate className="w-4 h-4 mr-2 text-slate-500" />}
                     Export JSON Data
                   </button>
                 </div>
